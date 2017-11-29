@@ -5,6 +5,7 @@ namespace Drupal\Tests\commerce_recurring\Kernel;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Exception\HardDeclineException;
 use Drupal\commerce_price\Price;
+use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\Subscription;
 use Drupal\Core\Datetime\DrupalDateTime;
 
@@ -44,7 +45,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'quantity' => '2',
       'unit_price' => new Price('2', 'USD'),
-      'state' => 'pending',
+      'state' => 'active',
       'starts' => strtotime('2017-02-24 17:30:00'),
     ]);
     $subscription->save();
@@ -107,6 +108,17 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $order_item = reset($order_items);
     $this->assertEquals($previous_order_item_id, $order_item->id());
     $this->assertEquals($this->subscription->getUnitPrice()->divide('2'), $order_item->getUnitPrice());
+
+    // Confirm that the order is canceled on refresh if no charges remain.
+    $this->billingSchedule->setBillingType(BillingScheduleInterface::BILLING_TYPE_PREPAID);
+    $this->billingSchedule->save();
+    $this->subscription->setState('canceled');
+    $this->subscription->save();
+    $this->reloadEntity($order_item);
+    $this->recurringOrderManager->refreshOrder($order);
+
+    $this->assertEquals('canceled', $order->getState()->value);
+    $this->assertEmpty($order->getItems());
   }
 
   /**
@@ -173,6 +185,12 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->assertEquals($next_billing_period, $order_item->get('billing_period')->first()->toBillingPeriod());
     $this->assertEquals(3600, $next_billing_period->getDuration());
     $this->assertEquals($this->subscription->id(), $order_item->get('subscription')->target_id);
+
+    // Confirm that no renewal occurs for canceled subscriptions.
+    $this->subscription->setState('canceled');
+    $this->subscription->save();
+    $result = $this->recurringOrderManager->renewOrder($next_order);
+    $this->assertNull($result);
   }
 
   /**

@@ -94,8 +94,13 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     foreach ($subscriptions as $subscription) {
       $this->applyCharges($order, $subscription, $billing_period);
     }
+    $order_items = $order->getItems();
+    // OrderRefresh skips empty orders, an order without items can't stay open.
+    if (!$order_items) {
+      $order->set('state', 'canceled');
+    }
     // The same workaround that \Drupal\commerce_order\OrderRefresh does.
-    foreach ($order->getItems() as $order_item) {
+    foreach ($order_items as $order_item) {
       if ($order_item->isNew()) {
         $order_item->order_id->entity = $order;
       }
@@ -145,6 +150,11 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     $subscriptions = $this->collectSubscriptions($order);
     /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
     $subscription = reset($subscriptions);
+    if ($subscription->getState()->value != 'active') {
+      // The subscription has ended.
+      return NULL;
+    }
+
     $billing_schedule = $subscription->getBillingSchedule();
     $start_date = DrupalDateTime::createFromTimestamp($subscription->getStartTime());
     /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $billing_period_item */

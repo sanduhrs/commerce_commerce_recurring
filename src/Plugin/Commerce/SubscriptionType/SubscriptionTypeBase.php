@@ -115,8 +115,13 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
    */
   public function collectCharges(SubscriptionInterface $subscription, BillingPeriod $billing_period) {
     $start_date = DrupalDateTime::createFromTimestamp($subscription->getStartTime());
+    $end_date = $subscription->getEndTime() ? DrupalDateTime::createFromTimestamp($subscription->getEndTime()) : NULL;
     $billing_type = $subscription->getBillingSchedule()->getBillingType();
     if ($billing_type == BillingScheduleInterface::BILLING_TYPE_PREPAID) {
+      if ($subscription->getState()->value != 'active') {
+        // The subscription has ended, nothing left to prepay.
+        return [];
+      }
       $billing_schedule = $subscription->getBillingSchedule()->getPlugin();
       // The initial order (which starts the subscription) pays the first
       // billing period, so the base charge is always for the next one.
@@ -126,12 +131,18 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
     else {
       // Postpaid means we're always charging for the current billing period.
       // The October recurring order (ending on Nov 1st) charges for October.
-      $base_billing_period = $billing_period;
+      $base_start_date = $billing_period->getStartDate();
+      $base_end_date = $billing_period->getEndDate();
       if ($billing_period->contains($start_date)) {
         // The subscription started after the billing period (E.g: customer
         // subscribed on Mar 10th for a Mar 1st - Apr 1st period).
-        $base_billing_period = new BillingPeriod($start_date, $billing_period->getEndDate());
+        $base_start_date = $start_date;
       }
+      if ($end_date && $billing_period->contains($end_date)) {
+        // The subscription ended before the end of the billing period.
+        $base_end_date = $end_date;
+      }
+      $base_billing_period = new BillingPeriod($base_start_date, $base_end_date);
     }
     $base_charge = new Charge([
       'purchased_entity' => $subscription->getPurchasedEntity(),

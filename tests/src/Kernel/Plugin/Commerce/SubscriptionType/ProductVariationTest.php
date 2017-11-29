@@ -44,6 +44,7 @@ class ProductVariationTest extends RecurringKernelTestBase {
       'title' => 'My subscription',
       'quantity' => 2,
       'unit_price' => new Price('49.99', 'USD'),
+      'state' => 'active',
       'starts' => strtotime('2017-02-24 17:30:00'),
     ]);
     $subscription->save();
@@ -74,6 +75,45 @@ class ProductVariationTest extends RecurringKernelTestBase {
     $this->assertEquals($subscription->getQuantity(), $base_charge->getQuantity());
     $this->assertEquals($subscription->getUnitPrice(), $base_charge->getUnitPrice());
     $this->assertEquals($next_billing_period, $base_charge->getBillingPeriod());
+  }
+
+  /**
+   * @covers ::collectCharges
+   */
+  public function testCanceledCharges() {
+    $subscription = Subscription::create([
+      'type' => 'product_variation',
+      'store_id' => $this->store->id(),
+      'billing_schedule' => $this->billingSchedule,
+      'uid' => $this->user,
+      'purchased_entity' => $this->variation,
+      'title' => 'My subscription',
+      'quantity' => 2,
+      'unit_price' => new Price('49.99', 'USD'),
+      'starts' => strtotime('2017-02-24 17:30:00'),
+      'ends' => strtotime('2017-02-24 17:45:00'),
+    ]);
+    $subscription->save();
+    $start_date = DrupalDateTime::createFromTimestamp($subscription->getStartTime());
+    $end_date = DrupalDateTime::createFromTimestamp($subscription->getEndTime());
+    $billing_period = $this->billingSchedule->getPlugin()->generateFirstBillingPeriod($start_date);
+
+    // Postpaid.
+    $charges = $subscription->getType()->collectCharges($subscription, $billing_period);
+    $this->assertCount(1, $charges);
+    $base_charge = reset($charges);
+    $this->assertInstanceOf(Charge::class, $base_charge);
+    $this->assertEquals($this->variation, $base_charge->getPurchasedEntity());
+    $this->assertEquals($subscription->getTitle(), $base_charge->getTitle());
+    $this->assertEquals($subscription->getQuantity(), $base_charge->getQuantity());
+    $this->assertEquals($subscription->getUnitPrice(), $base_charge->getUnitPrice());
+    $this->assertEquals(new BillingPeriod($start_date, $end_date), $base_charge->getBillingPeriod());
+
+    // Prepaid.
+    $this->billingSchedule->setBillingType(BillingSchedule::BILLING_TYPE_PREPAID);
+    $this->billingSchedule->save();
+    $charges = $subscription->getType()->collectCharges($subscription, $billing_period);
+    $this->assertCount(0, $charges);
   }
 
 }

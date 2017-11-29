@@ -54,8 +54,8 @@ interface RecurringOrderManagerInterface {
    * @param \Drupal\commerce_order\Entity\OrderInterface $order
    *   The recurring order.
    *
-   * @return \Drupal\commerce_order\Entity\OrderInterface
-   *   The next recurring order.
+   * @return \Drupal\commerce_order\Entity\OrderInterface|null
+   *   The next recurring order, or NULL if none remain.
    */
   public function renewOrder(OrderInterface $order);
 

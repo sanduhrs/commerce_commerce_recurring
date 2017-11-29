@@ -3,6 +3,7 @@
 namespace Drupal\Tests\commerce_recurring\Kernel;
 
 use Drupal\commerce_price\Price;
+use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\Subscription;
 
 /**
@@ -53,6 +54,16 @@ class OrderRefreshTest extends RecurringKernelTestBase {
     $order->save();
 
     $this->assertEquals(new Price('3', 'USD'), $order->getTotalPrice());
+
+    // Confirm that the order is canceled on refresh if no charges remain.
+    $this->billingSchedule->setBillingType(BillingScheduleInterface::BILLING_TYPE_PREPAID);
+    $this->billingSchedule->save();
+    $subscription->setState('canceled');
+    $subscription->save();
+    $order->save();
+
+    $this->assertEquals('canceled', $order->getState()->value);
+    $this->assertEmpty($order->getItems());
   }
 
 }
