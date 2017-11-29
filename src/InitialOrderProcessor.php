@@ -6,6 +6,8 @@ use Drupal\commerce_order\Adjustment;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\OrderProcessorInterface;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
+use Drupal\Component\Datetime\TimeInterface;
+use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
  * Modifies the price of order items which start subscriptions.
@@ -13,20 +15,20 @@ use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 class InitialOrderProcessor implements OrderProcessorInterface {
 
   /**
-   * The order item prorater.
+   * The time.
    *
-   * @var \Drupal\commerce_recurring\OrderItemProraterInterface
+   * @var \Drupal\Component\Datetime\TimeInterface
    */
-  protected $orderItemProrater;
+  protected $time;
 
   /**
    * Constructs a new InitialOrderProcessor object.
    *
-   * @param \Drupal\commerce_recurring\OrderItemProraterInterface $order_item_prorater
-   *   The order item prorater.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time.
    */
-  public function __construct(OrderItemProraterInterface $order_item_prorater) {
-    $this->orderItemProrater = $order_item_prorater;
+  public function __construct(TimeInterface $time) {
+    $this->time = $time;
   }
 
   /**
@@ -37,6 +39,7 @@ class InitialOrderProcessor implements OrderProcessorInterface {
       return;
     }
 
+    $start_date = DrupalDateTime::createFromTimestamp($this->time->getRequestTime());
     foreach ($order->getItems() as $order_item) {
       $purchased_entity = $order_item->getPurchasedEntity();
       if (!$purchased_entity || !$purchased_entity->hasField('billing_schedule')) {
@@ -57,7 +60,10 @@ class InitialOrderProcessor implements OrderProcessorInterface {
         // Prepaid subscriptions need to be prorated so that the customer
         // pays only for the portion of the period that they'll get.
         $unit_price = $order_item->getUnitPrice();
-        $prorated_unit_price = $this->orderItemProrater->prorateInitial($order_item, $billing_schedule);
+        $billing_period = $billing_schedule->getPlugin()->generateFirstBillingPeriod($start_date);
+        $partial_billing_period = new BillingPeriod($start_date, $billing_period->getEndDate());
+        $prorater = $billing_schedule->getProrater();
+        $prorated_unit_price = $prorater->prorateOrderItem($order_item, $partial_billing_period, $billing_period);
         if (!$prorated_unit_price->equals($unit_price)) {
           $difference = $unit_price->subtract($prorated_unit_price);
           $order_item->addAdjustment(new Adjustment([

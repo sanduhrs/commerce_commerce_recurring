@@ -3,6 +3,7 @@
 namespace Drupal\commerce_recurring\Form;
 
 use Drupal\commerce\Form\CommercePluginEntityFormBase;
+use Drupal\commerce_recurring\ProraterManager;
 use Drupal\commerce_recurring\BillingScheduleManager;
 use Drupal\commerce_recurring\Entity\BillingSchedule;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
@@ -17,16 +18,26 @@ class BillingScheduleForm extends CommercePluginEntityFormBase {
    *
    * @var \Drupal\commerce_recurring\BillingScheduleManager
    */
-  protected $pluginManager;
+  protected $billingSchedulePluginManager;
+
+  /**
+   * The prorater plugin manager.
+   *
+   * @var \Drupal\commerce_recurring\ProraterManager
+   */
+  protected $proraterPluginManager;
 
   /**
    * Constructs a new BillingScheduleForm object.
    *
-   * @param \Drupal\commerce_recurring\BillingScheduleManager $plugin_manager
+   * @param \Drupal\commerce_recurring\BillingScheduleManager $billing_schedule_plugin_manager
    *   The billing schedule plugin manager.
+   * @param \Drupal\commerce_recurring\ProraterManager $prorater_manager
+   *   The prorater plugin manager.
    */
-  public function __construct(BillingScheduleManager $plugin_manager) {
-    $this->pluginManager = $plugin_manager;
+  public function __construct(BillingScheduleManager $billing_schedule_plugin_manager, ProraterManager $prorater_manager) {
+    $this->billingSchedulePluginManager = $billing_schedule_plugin_manager;
+    $this->proraterPluginManager = $prorater_manager;
   }
 
   /**
@@ -34,7 +45,8 @@ class BillingScheduleForm extends CommercePluginEntityFormBase {
    */
   public static function create(ContainerInterface $container) {
     return new static(
-      $container->get('plugin.manager.commerce_billing_schedule')
+      $container->get('plugin.manager.commerce_billing_schedule'),
+      $container->get('plugin.manager.commerce_prorater')
     );
   }
 
@@ -45,8 +57,10 @@ class BillingScheduleForm extends CommercePluginEntityFormBase {
     $form = parent::form($form, $form_state);
     /** @var \Drupal\commerce_recurring\Entity\BillingScheduleInterface $billing_schedule */
     $billing_schedule = $this->entity;
-    $plugins = array_column($this->pluginManager->getDefinitions(), 'label', 'id');
+    $plugins = array_column($this->billingSchedulePluginManager->getDefinitions(), 'label', 'id');
     asort($plugins);
+    $proraters = array_column($this->proraterPluginManager->getDefinitions(), 'label', 'id');
+    asort($proraters);
 
     // Use the first available plugin as the default value.
     if (!$billing_schedule->getPluginId()) {
@@ -56,8 +70,10 @@ class BillingScheduleForm extends CommercePluginEntityFormBase {
     }
     // The form state will have a plugin value if #ajax was used.
     $plugin = $form_state->getValue('plugin', $billing_schedule->getPluginId());
-    // Pass the plugin configuration only if the plugin hasn't been changed via #ajax.
+    $prorater = $form_state->getValue('prorater', $billing_schedule->getProraterId());
+    // Pass the configuration only if the plugin hasn't been changed via #ajax.
     $plugin_configuration = $billing_schedule->getPluginId() == $plugin ? $billing_schedule->getPluginConfiguration() : [];
+    $prorater_configuration = $billing_schedule->getProraterId() == $prorater ? $billing_schedule->getProraterConfiguration() : [];
 
     $wrapper_id = Html::getUniqueId('billing-schedule-form');
     $form['#tree'] = TRUE;
@@ -112,6 +128,24 @@ class BillingScheduleForm extends CommercePluginEntityFormBase {
       '#plugin_type' => 'commerce_billing_schedule',
       '#plugin_id' => $plugin,
       '#default_value' => $plugin_configuration,
+    ];
+    $form['prorater'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Prorater'),
+      '#description' => $this->t('Modifies unit prices to reflect partial billing periods.'),
+      '#options' => $proraters,
+      '#default_value' => $prorater,
+      '#required' => TRUE,
+      '#ajax' => [
+        'callback' => '::ajaxRefresh',
+        'wrapper' => $wrapper_id,
+      ],
+    ];
+    $form['prorater_configuration'] = [
+      '#type' => 'commerce_plugin_configuration',
+      '#plugin_type' => 'commerce_prorater',
+      '#plugin_id' => $prorater,
+      '#default_value' => $prorater_configuration,
     ];
 
     $retry_schedule = $billing_schedule->getRetrySchedule();
@@ -196,6 +230,7 @@ class BillingScheduleForm extends CommercePluginEntityFormBase {
     /** @var \Drupal\commerce_recurring\Entity\BillingScheduleInterface $billing_schedule */
     $billing_schedule = $this->entity;
     $billing_schedule->setPluginConfiguration($values['configuration']);
+    $billing_schedule->setProraterConfiguration($values['prorater_configuration']);
     $billing_schedule->setRetrySchedule($values['dunning']['retry']);
     $billing_schedule->setUnpaidSubscriptionState($values['dunning']['unpaid_subscription_state']);
   }

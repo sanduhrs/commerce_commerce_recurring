@@ -5,6 +5,7 @@ namespace Drupal\Tests\commerce_recurring\Kernel\Entity;
 use Drupal\commerce_recurring\Entity\BillingSchedule;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Plugin\Commerce\BillingSchedule\Rolling;
+use Drupal\commerce_recurring\Plugin\Commerce\Prorater\Proportional;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
@@ -40,6 +41,8 @@ class BillingScheduleTest extends KernelTestBase {
    * @covers ::getPluginId
    * @covers ::getPluginConfiguration
    * @covers ::setPluginConfiguration
+   * @covers ::getProrater
+   * @covers ::getProraterId
    */
   public function testBillingSchedule() {
     BillingSchedule::create([
@@ -54,6 +57,8 @@ class BillingScheduleTest extends KernelTestBase {
           'unit' => 'month',
         ],
       ],
+      'prorater' => 'proportional',
+      'proraterConfiguration' => [],
     ])->save();
 
     $billing_schedule = BillingSchedule::load('test_id');
@@ -99,6 +104,11 @@ class BillingScheduleTest extends KernelTestBase {
     $this->assertInstanceOf(Rolling::class, $plugin);
     $this->assertEquals($billing_schedule->getPluginId(), $plugin->getPluginId());
     $this->assertEquals($billing_schedule->getPluginConfiguration(), $plugin->getConfiguration());
+
+    $this->assertEquals('proportional', $billing_schedule->getProraterId());
+    $prorater = $billing_schedule->getProrater();
+    $this->assertInstanceOf(Proportional::class, $prorater);
+    $this->assertEquals($billing_schedule->getProraterId(), $prorater->getPluginId());
   }
 
 }

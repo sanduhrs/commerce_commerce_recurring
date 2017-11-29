@@ -28,6 +28,11 @@ commerce_recurring.commerce_billing_schedule.*:
       label: 'Plugin'
     configuration:
       type: commerce_recurring.commerce_billing_schedule.plugin.[%parent.plugin]
+    prorater:
+      type: string
+      label: 'Prorater'
+    proraterConfiguration:
+      type: commerce_recurring.commerce_prorater.plugin.[%parent.prorater]:
 
 commerce_recurring.commerce_billing_schedule.plugin.*:
   type: mapping
@@ -59,6 +64,9 @@ commerce_recurring.commerce_billing_schedule.plugin.rolling:
         unit:
           type: string
           label: Unit
+
+commerce_recurring.commerce_prorater.plugin.*:
+  type: mapping
 
 field.value.commerce_billing_period:
  type: mapping

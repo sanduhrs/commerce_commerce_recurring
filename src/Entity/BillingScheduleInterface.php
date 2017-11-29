@@ -149,4 +149,48 @@ interface BillingScheduleInterface extends ConfigEntityInterface, EntityWithPlug
    */
   public function getPlugin();
 
+  /**
+   * Gets the prorater plugin ID.
+   *
+   * @return string
+   *   The prorater plugin ID.
+   */
+  public function getProraterId();
+
+  /**
+   * Sets the prorater plugin ID.
+   *
+   * @param string $prorater_id
+   *   The prorater plugin ID.
+   *
+   * @return $this
+   */
+  public function setProraterId($prorater_id);
+
+  /**
+   * Gets the prorater plugin configuration.
+   *
+   * @return array
+   *   The prorater plugin configuration.
+   */
+  public function getProraterConfiguration();
+
+  /**
+   * Sets the prorater plugin configuration.
+   *
+   * @param array $configuration
+   *   The prorater plugin configuration.
+   *
+   * @return $this
+   */
+  public function setProraterConfiguration(array $configuration);
+
+  /**
+   * Gets the prorater plugin.
+   *
+   * @return \Drupal\commerce_recurring\Plugin\Commerce\Prorater\ProraterInterface
+   *   The prorater plugin.
+   */
+  public function getProrater();
+
 }

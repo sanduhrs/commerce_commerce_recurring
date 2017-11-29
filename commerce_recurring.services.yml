@@ -12,7 +12,7 @@ services:
 
   commerce_recurring.initial_order_processor:
     class: Drupal\commerce_recurring\InitialOrderProcessor
-    arguments: ['@commerce_recurring.order_item_prorater']
+    arguments: ['@datetime.time']
     tags:
       - { name: commerce_order.order_processor, priority: 40 }
 
@@ -26,13 +26,9 @@ services:
     class: \Drupal\commerce_recurring\Cron
     arguments: ['@entity_type.manager', '@datetime.time']
 
-  commerce_recurring.order_item_prorater:
-    class: Drupal\commerce_recurring\OrderItemProrater
-    arguments: ['@commerce_price.rounder']
-
   commerce_recurring.order_manager:
     class: \Drupal\commerce_recurring\RecurringOrderManager
-    arguments: ['@entity_type.manager', '@commerce_recurring.order_item_prorater', '@datetime.time']
+    arguments: ['@entity_type.manager', '@datetime.time']
 
   plugin.manager.commerce_billing_schedule:
     class: Drupal\commerce_recurring\BillingScheduleManager
@@ -40,4 +36,8 @@ services:
 
   plugin.manager.commerce_subscription_type:
     class: Drupal\commerce_recurring\SubscriptionTypeManager
+    parent: default_plugin_manager
+
+  plugin.manager.commerce_prorater:
+    class: Drupal\commerce_recurring\ProraterManager
     parent: default_plugin_manager

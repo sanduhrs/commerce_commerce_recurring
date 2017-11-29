@@ -28,6 +28,7 @@ class ReferenceablePluginTypesSubscriber implements EventSubscriberInterface {
   public function onPluginTypes(ReferenceablePluginTypesEvent $event) {
     $types = $event->getPluginTypes();
     $types['commerce_subscription_type'] = $this->t('Subscription type');
+    $types['commerce_prorater'] = $this->t('Prorater');
     $event->setPluginTypes($types);
   }
 

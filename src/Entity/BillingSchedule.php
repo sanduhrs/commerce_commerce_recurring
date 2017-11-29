@@ -47,6 +47,8 @@ use Drupal\Core\Config\Entity\ConfigEntityBase;
  *     "unpaidSubscriptionState",
  *     "plugin",
  *     "configuration",
+ *     "prorater",
+ *     "proraterConfiguration",
  *     "status",
  *   },
  *   links = {
@@ -118,11 +120,32 @@ class BillingSchedule extends ConfigEntityBase implements BillingScheduleInterfa
   protected $configuration = [];
 
   /**
+   * The prorater plugin ID.
+   *
+   * @var string
+   */
+  protected $prorater = 'proportional';
+
+  /**
+   * The prorater plugin configuration.
+   *
+   * @var array
+   */
+  protected $proraterConfiguration = [];
+
+  /**
    * The plugin collection that holds the billing schedule plugin.
    *
    * @var \Drupal\commerce\CommerceSinglePluginCollection
    */
-  protected $pluginCollection;
+  protected $billingSchedulePluginCollection;
+
+  /**
+   * The plugin collection that holds the prorater plugin.
+   *
+   * @var \Drupal\commerce\CommerceSinglePluginCollection
+   */
+  protected $proraterPluginCollection;
 
   /**
    * {@inheritdoc}
@@ -200,7 +223,7 @@ class BillingSchedule extends ConfigEntityBase implements BillingScheduleInterfa
   public function setPluginId($plugin_id) {
     $this->plugin = $plugin_id;
     $this->configuration = [];
-    $this->pluginCollection = NULL;
+    $this->billingSchedulePluginCollection = NULL;
     return $this;
   }
 
@@ -216,7 +239,7 @@ class BillingSchedule extends ConfigEntityBase implements BillingScheduleInterfa
    */
   public function setPluginConfiguration(array $configuration) {
     $this->configuration = $configuration;
-    $this->pluginCollection = NULL;
+    $this->billingSchedulePluginCollection = NULL;
     return $this;
   }
 
@@ -224,7 +247,47 @@ class BillingSchedule extends ConfigEntityBase implements BillingScheduleInterfa
    * {@inheritdoc}
    */
   public function getPlugin() {
-    return $this->getPluginCollection()->get($this->plugin);
+    return $this->getBillingSchedulePluginCollection()->get($this->plugin);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getProraterId() {
+    return $this->prorater;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setProraterId($prorater_id) {
+    $this->prorater = $prorater_id;
+    $this->proraterConfiguration = [];
+    $this->proraterPluginCollection = NULL;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getProraterConfiguration() {
+    return $this->proraterConfiguration;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setProraterConfiguration(array $configuration) {
+    $this->proraterConfiguration = $configuration;
+    $this->proraterPluginCollection = NULL;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getProrater() {
+    return $this->getProraterPluginCollection()->get($this->prorater);
   }
 
   /**
@@ -232,7 +295,8 @@ class BillingSchedule extends ConfigEntityBase implements BillingScheduleInterfa
    */
   public function getPluginCollections() {
     return [
-      'configuration' => $this->getPluginCollection(),
+      'configuration' => $this->getBillingSchedulePluginCollection(),
+      'proraterConfiguration' => $this->getProraterPluginCollection(),
     ];
   }
 
@@ -260,12 +324,28 @@ class BillingSchedule extends ConfigEntityBase implements BillingScheduleInterfa
    * @return \Drupal\commerce\CommerceSinglePluginCollection
    *   The plugin collection.
    */
-  protected function getPluginCollection() {
-    if (!$this->pluginCollection) {
+  protected function getBillingSchedulePluginCollection() {
+    if (!$this->billingSchedulePluginCollection) {
       $plugin_manager = \Drupal::service('plugin.manager.commerce_billing_schedule');
-      $this->pluginCollection = new CommerceSinglePluginCollection($plugin_manager, $this->plugin, $this->configuration, $this->id);
+      $this->billingSchedulePluginCollection = new CommerceSinglePluginCollection($plugin_manager, $this->plugin, $this->configuration, $this->id);
     }
-    return $this->pluginCollection;
+    return $this->billingSchedulePluginCollection;
+  }
+
+  /**
+   * Gets the plugin collection that holds the prorater plugin.
+   *
+   * Ensures the plugin collection is initialized before returning it.
+   *
+   * @return \Drupal\commerce\CommerceSinglePluginCollection
+   *   The plugin collection.
+   */
+  protected function getProraterPluginCollection() {
+    if (!$this->proraterPluginCollection) {
+      $plugin_manager = \Drupal::service('plugin.manager.commerce_prorater');
+      $this->proraterPluginCollection = new CommerceSinglePluginCollection($plugin_manager, $this->prorater, $this->proraterConfiguration, $this->id);
+    }
+    return $this->proraterPluginCollection;
   }
 
 }

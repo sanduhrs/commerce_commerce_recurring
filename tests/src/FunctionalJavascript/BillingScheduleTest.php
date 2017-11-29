@@ -52,6 +52,7 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
       'plugin' => 'fixed',
       'configuration[fixed][interval][number]' => '2',
       'configuration[fixed][interval][unit]' => 'month',
+      'prorater' => 'proportional',
       // Setting the 'id' can fail if focus switches to another field.
       // This is a bug in the machine name JS that can be reproduced manually.
       'id' => 'test',
@@ -75,6 +76,7 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
       ],
     ], $billing_schedule->getPluginConfiguration());
     $this->assertEquals($billing_schedule->getPluginConfiguration(), $billing_schedule->getPlugin()->getConfiguration());
+    $this->assertEquals('proportional', $billing_schedule->getProraterId());
   }
 
   /**
@@ -93,6 +95,8 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
           'unit' => 'month',
         ],
       ],
+      'prorater' => 'proportional',
+      'proraterConfiguration' => [],
     ]);
     $billing_schedule->save();
 
@@ -109,6 +113,7 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
       'plugin' => 'fixed',
       'configuration[fixed][interval][number]' => '1',
       'configuration[fixed][interval][unit]' => 'year',
+      'prorater' => 'full_price',
     ], 'Save');
 
     \Drupal::entityTypeManager()->getStorage('commerce_billing_schedule')->resetCache();
@@ -127,6 +132,7 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
       ],
     ], $billing_schedule->getPluginConfiguration());
     $this->assertEquals($billing_schedule->getPluginConfiguration(), $billing_schedule->getPlugin()->getConfiguration());
+    $this->assertEquals('full_price', $billing_schedule->getProraterId());
   }
 
   /**

@@ -9,3 +9,9 @@ commerce_recurring.subscription_type:
   provider: commerce_recurring
   plugin_manager_service_id: plugin.manager.commerce_subscription_type
   plugin_definition_decorator_class: Drupal\plugin\PluginDefinition\ArrayPluginDefinitionDecorator
+
+commerce_recurring.prorater:
+  label: Commerce prorater
+  provider: commerce_recurring
+  plugin_manager_service_id: plugin.manager.commerce_prorater
+  plugin_definition_decorator_class: Drupal\plugin\PluginDefinition\ArrayPluginDefinitionDecorator
