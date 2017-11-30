@@ -19,7 +19,6 @@ class RecurringKernelTestBase extends CommerceKernelTestBase {
    * {@inheritdoc}
    */
   public static $modules = [
-    'action',
     'advancedqueue',
     'path',
     'profile',
