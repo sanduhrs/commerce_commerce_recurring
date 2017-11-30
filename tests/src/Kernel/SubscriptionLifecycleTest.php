@@ -50,8 +50,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
       'quantity' => '3',
     ]);
     $second_order_item->save();
-
-    $order = Order::create([
+    $initial_order = Order::create([
       'type' => 'default',
       'store_id' => $this->store,
       'uid' => $this->user,
@@ -59,13 +58,13 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
       'state' => 'draft',
       'payment_method' => $this->paymentMethod,
     ]);
-    $order->save();
+    $initial_order->save();
 
     $subscriptions = Subscription::loadMultiple();
     $this->assertCount(0, $subscriptions);
 
-    $order->state = 'completed';
-    $order->save();
+    $initial_order->state = 'completed';
+    $initial_order->save();
 
     $subscriptions = Subscription::loadMultiple();
     $this->assertCount(1, $subscriptions);
