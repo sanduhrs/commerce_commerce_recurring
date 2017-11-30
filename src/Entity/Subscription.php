@@ -66,6 +66,13 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
   /**
    * {@inheritdoc}
    */
+  public function label() {
+    return sprintf('#%s (%s)', $this->id(), $this->getTitle());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getType() {
     $subscription_type_manager = \Drupal::service('plugin.manager.commerce_subscription_type');
     return $subscription_type_manager->createInstance($this->bundle());
