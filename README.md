@@ -36,3 +36,9 @@ Future use cases: Physical products (Dollar Shave Club, etc)
 That's it! Each time your product variation is purchased, a subscription will be created for it.
 By default, subscriptions are renewed on cron. This can be changed to a Drush/Drupal Console
 daemon by editing the queue at /admin/config/system/queues/manage/commerce_recurring.
+
+## Payment gateway requirements
+
+The module requires an on-site payment gateway such as Commerce Braintree.
+On-site gateways allow using tokenized payment methods for repeated charges, avoiding the need to store sensitive information such as credit card numbers.
+The "Example (On-site)" payment gateway provided by commerce_payment_example can be used for testing purposes.
