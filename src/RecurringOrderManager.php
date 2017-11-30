@@ -6,7 +6,6 @@ use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Exception\HardDeclineException;
 use Drupal\commerce_recurring\Entity\SubscriptionInterface;
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 
 /**
@@ -57,7 +56,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
    * {@inheritdoc}
    */
   public function ensureOrder(SubscriptionInterface $subscription) {
-    $start_date = DrupalDateTime::createFromTimestamp($subscription->getStartTime());
+    $start_date = $subscription->getStartDate();
     $billing_schedule = $subscription->getBillingSchedule();
     $billing_period = $billing_schedule->getPlugin()->generateFirstBillingPeriod($start_date);
     $order = $this->createOrder($subscription, $billing_period);
@@ -156,7 +155,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     }
 
     $billing_schedule = $subscription->getBillingSchedule();
-    $start_date = DrupalDateTime::createFromTimestamp($subscription->getStartTime());
+    $start_date = $subscription->getStartDate();
     /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $billing_period_item */
     $billing_period_item = $order->get('billing_period')->first();
     $current_billing_period = $billing_period_item->toBillingPeriod();

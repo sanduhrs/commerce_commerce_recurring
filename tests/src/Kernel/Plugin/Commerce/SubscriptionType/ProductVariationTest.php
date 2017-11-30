@@ -7,7 +7,6 @@ use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\commerce_recurring\Charge;
 use Drupal\commerce_recurring\Entity\BillingSchedule;
 use Drupal\commerce_recurring\Entity\Subscription;
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
 
 /**
@@ -48,7 +47,7 @@ class ProductVariationTest extends RecurringKernelTestBase {
       'starts' => strtotime('2017-02-24 17:30:00'),
     ]);
     $subscription->save();
-    $start_date = DrupalDateTime::createFromTimestamp($subscription->getStartTime());
+    $start_date = $subscription->getStartDate();
     $billing_period = $this->billingSchedule->getPlugin()->generateFirstBillingPeriod($start_date);
     $next_billing_period = $this->billingSchedule->getPlugin()->generateNextBillingPeriod($start_date, $billing_period);
 
@@ -94,8 +93,8 @@ class ProductVariationTest extends RecurringKernelTestBase {
       'ends' => strtotime('2017-02-24 17:45:00'),
     ]);
     $subscription->save();
-    $start_date = DrupalDateTime::createFromTimestamp($subscription->getStartTime());
-    $end_date = DrupalDateTime::createFromTimestamp($subscription->getEndTime());
+    $start_date = $subscription->getStartDate();
+    $end_date = $subscription->getEndDate();
     $billing_period = $this->billingSchedule->getPlugin()->generateFirstBillingPeriod($start_date);
 
     // Postpaid.

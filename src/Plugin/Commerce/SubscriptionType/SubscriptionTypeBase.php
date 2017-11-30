@@ -8,7 +8,6 @@ use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\commerce_recurring\Charge;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\SubscriptionInterface;
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
@@ -114,8 +113,8 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
    * {@inheritdoc}
    */
   public function collectCharges(SubscriptionInterface $subscription, BillingPeriod $billing_period) {
-    $start_date = DrupalDateTime::createFromTimestamp($subscription->getStartTime());
-    $end_date = $subscription->getEndTime() ? DrupalDateTime::createFromTimestamp($subscription->getEndTime()) : NULL;
+    $start_date = $subscription->getStartDate();;
+    $end_date = $subscription->getEndDate();
     $billing_type = $subscription->getBillingSchedule()->getBillingType();
     if ($billing_type == BillingScheduleInterface::BILLING_TYPE_PREPAID) {
       if ($subscription->getState()->value != 'active') {

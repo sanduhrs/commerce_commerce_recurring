@@ -6,6 +6,7 @@ use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentMethodInterface;
 use Drupal\commerce_price\Price;
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityMalformedException;
 use Drupal\Core\Entity\EntityStorageInterface;
@@ -380,6 +381,22 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
   public function setEndTime($timestamp) {
     $this->set('ends', $timestamp);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getStartDate() {
+    return DrupalDateTime::createFromTimestamp($this->getStartTime());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getEndDate() {
+    if ($end_time = $this->getEndTime()) {
+      return DrupalDateTime::createFromTimestamp($end_time);
+    }
   }
 
   /**

@@ -363,4 +363,20 @@ interface SubscriptionInterface extends ContentEntityInterface {
    */
   public function setEndTime($timestamp);
 
+  /**
+   * Gets the start timestamp as a DrupalDateTime object.
+   *
+   * @return \Drupal\Core\Datetime\DrupalDateTime
+   *   The start date/time.
+   */
+  public function getStartDate();
+
+  /**
+   * Gets the end timestamp as a DrupalDateTime object.
+   *
+   * @return \Drupal\Core\Datetime\DrupalDateTime|null
+   *   The end date/time, or NULL if not yet known.
+   */
+  public function getEndDate();
+
 }
