@@ -9,7 +9,6 @@ use Drupal\commerce_recurring\Charge;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\SubscriptionInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Plugin\PluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -54,36 +53,6 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
       $plugin_definition,
       $container->get('entity_type.manager')
     );
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function buildConfigurationForm(array $form, FormStateInterface $form_state) {
-    return $form;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function validateConfigurationForm(array &$form, FormStateInterface $form_state) {}
-
-  /**
-   * {@inheritdoc}
-   */
-  public function submitConfigurationForm(array &$form, FormStateInterface $form_state) {}
-
-  /**
-   * Gets the plugin configuration.
-   *
-   * Implemented as a workaround for #2886812, remove once Commerce 8.x-2.2
-   * is released.
-   *
-   * @return array
-   *   The plugin configuration.
-   */
-  public function getConfiguration() {
-    return [];
   }
 
   /**
