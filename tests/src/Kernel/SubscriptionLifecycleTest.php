@@ -9,6 +9,8 @@ use Drupal\commerce_recurring\Entity\Subscription;
 
 /**
  * Tests the subscription lifecycle.
+ *
+ * @group commerce_recurring
  */
 class SubscriptionLifecycleTest extends RecurringKernelTestBase {
 

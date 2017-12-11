@@ -32,7 +32,7 @@ commerce_recurring.commerce_billing_schedule.*:
       type: string
       label: 'Prorater'
     proraterConfiguration:
-      type: commerce_recurring.commerce_prorater.plugin.[%parent.prorater]:
+      type: commerce_recurring.commerce_prorater.plugin.[%parent.prorater]
 
 commerce_recurring.commerce_billing_schedule.plugin.*:
   type: mapping
