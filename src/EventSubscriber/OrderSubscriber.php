@@ -55,6 +55,9 @@ class OrderSubscriber implements EventSubscriberInterface {
     $subscription_storage = $this->entityTypeManager->getStorage('commerce_subscription');
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = $event->getEntity();
+    if ($order->bundle() == 'recurring') {
+      return;
+    }
     $payment_method = $order->get('payment_method')->entity;
     if (empty($payment_method)) {
       return;
