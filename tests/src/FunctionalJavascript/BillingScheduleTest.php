@@ -103,6 +103,8 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
     $this->drupalGet('admin/commerce/config/billing-schedules/manage/' . $billing_schedule->id());
     $this->getSession()->getPage()->selectFieldOption('dunning[num_retries]', '2');
     $this->waitForAjaxToFinish();
+    $this->getSession()->getPage()->selectFieldOption('prorater', 'full_price');
+    $this->waitForAjaxToFinish();
     $this->submitForm([
       'label' => 'Test (Modified)',
       'displayLabel' => 'Awesome test (Modified)',
@@ -110,10 +112,8 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
       'dunning[retry][0]' => '6',
       'dunning[retry][1]' => '7',
       'dunning[unpaid_subscription_state]' => 'active',
-      'plugin' => 'fixed',
       'configuration[fixed][interval][number]' => '1',
       'configuration[fixed][interval][unit]' => 'year',
-      'prorater' => 'full_price',
     ], 'Save');
 
     \Drupal::entityTypeManager()->getStorage('commerce_billing_schedule')->resetCache();
