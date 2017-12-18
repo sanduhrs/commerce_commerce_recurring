@@ -251,6 +251,12 @@ function commerce_recurring_rules_action_info() {
         'label' => t('Quantity'),
       ),
     ),
+    'provides' => array(
+      'new_commerce_recurring' => array(
+        'type' => 'commerce_recurring',
+        'label' => t('Generated commerce_recurring entity'),
+      ),
+    ),
     'group' => t('Commerce recurring'),
     'callbacks' => array(
       'execute' => 'commerce_recurring_rules_generate_recurring_product',
@@ -457,6 +463,8 @@ function commerce_recurring_rules_generate_recurring_product($order, $line_item,
   }
 
   rules_invoke_event('commerce_recurring_paid_full', $order, $recurring_entity, count($recurring_entity->commerce_recurring_order[LANGUAGE_NONE]));
+
+  return array('new_commerce_recurring' => $recurring_entity);
 }
 
 /**
