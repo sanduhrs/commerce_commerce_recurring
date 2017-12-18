@@ -1,9 +1,8 @@
 <?php
 
 /**
- * @file
+ * Performs database updates and uninstallation cleanup for the Commerce Recurring module.
  */
-
 
 /**
  * Implements hook_schema().
@@ -107,6 +106,21 @@ function commerce_recurring_install() {
 }
 
 /**
+ * Implements hook_enable().
+ */
+function commerce_recurring_enable() {
+  // Make sure we're in a non cached environment.
+  entity_info_cache_clear();
+  field_cache_clear();
+
+  // Create and configure the recurring product type fields.
+  commerce_recurring_configure_product_type();
+
+  // Create and configure the recurring entity.
+  commerce_recurring_configure_recurring_entity_type();
+}
+
+/**
  * Implements hook_uninstall().
  */
 function commerce_recurring_uninstall() {
@@ -118,9 +132,17 @@ function commerce_recurring_uninstall() {
   // Delete field instances from commerce recurring entity.
   commerce_delete_instances('commerce_recurring');
   // Delete all fields created by this module.
-  $fields = array('commerce_recurring_ini_price', 'commerce_recurring_rec_price', 'commerce_recurring_ini_period', 'commerce_recurring_rec_period',
-    'commerce_recurring_end_period', 'commerce_recurring_ref_product', 'commerce_recurring_order', 'commerce_recurring_fixed_price');
-  foreach($fields as $field_name) {
+  $fields = array(
+    'commerce_recurring_ini_price',
+    'commerce_recurring_rec_price',
+    'commerce_recurring_ini_period',
+    'commerce_recurring_rec_period',
+    'commerce_recurring_end_period',
+    'commerce_recurring_ref_product',
+    'commerce_recurring_order',
+    'commerce_recurring_fixed_price'
+  );
+  foreach ($fields as $field_name) {
     commerce_delete_field($field_name);
   }
 }

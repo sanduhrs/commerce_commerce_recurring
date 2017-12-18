@@ -66,21 +66,6 @@ function commerce_recurring_types() {
 }
 
 /**
- * Implements hook_enable().
- */
-function commerce_recurring_enable() {
-  // Make sure we're in a non cached environment.
-  entity_info_cache_clear();
-  field_cache_clear();
-
-  // Create and configure the recurring product type fields.
-  commerce_recurring_configure_product_type();
-
-  // Create and configure the recurring entity.
-  commerce_recurring_configure_recurring_entity_type();
-}
-
-/**
  * Ensures that the price and interval fields are created.
  */
 function commerce_recurring_configure_product_type() {
@@ -143,7 +128,7 @@ function commerce_recurring_configure_product_type() {
   $instances['commerce_recurring_end_period']['label'] = t('End period');
 
   // Create fields & instances if necessary.
-  foreach($fields as $field_name => $field) {
+  foreach ($fields as $field_name => $field) {
     $info_field = field_info_field($field_name);
     $instance = field_info_instance('commerce_product', $field_name, 'recurring');
 
@@ -220,7 +205,7 @@ function commerce_recurring_configure_recurring_entity_type() {
   $instances['commerce_recurring_order']['label'] = t('Referenced orders');
 
   // Create fields & instances if necessary.
-  foreach($fields as $field_name => $field) {
+  foreach ($fields as $field_name => $field) {
     $info_field = field_info_field($field_name);
     $instance = field_info_instance('commerce_recurring', $field_name, 'product');
 
@@ -241,24 +226,25 @@ function commerce_recurring_configure_recurring_entity_type() {
 /**
  * Creates a instance of a price field on the specified bundle.
  *
- * @param $field_name
+ * @param string $field_name
  *   The name of the field; if it already exists, a new instance of the existing
  *     field will be created. For fields governed by the Commerce modules, this
  *     should begin with commerce_.
- * @param $entity_type
+ * @param string $entity_type
  *   The type of entity the field instance will be attached to.
- * @param $bundle
+ * @param string $bundle
  *   The bundle name of the entity the field instance will be attached to.
- * @param $label
+ * @param string $label
  *   The label of the field instance.
  * @param int $weight
  *   The default weight of the field instance widget and display.
  * @param bool $calculation
- *   A string indicating the default value of the display formatter's calculation
- *     setting.
+ *   A string indicating the default value of the display formatter's 
+ *     calculation setting.
  * @param array $display
  *   An array of default display data used for the entity's current view modes.
  * @param bool $required
+ *   Determines if the field is required.
  */
 function commerce_recurring_price_create_instance($field_name, $entity_type, $bundle, $label, $weight = 0, $calculation = FALSE, $display = array(), $required = FALSE) {
   // If a field type we know should exist isn't found, clear the Field cache.
@@ -331,8 +317,8 @@ function commerce_recurring_price_create_instance($field_name, $entity_type, $bu
  * Returns an initialized Commerce Recurring entity.
  *
  * Initializes all the properties defined plus the two entity reference fields.
- *  - product_id: Commerce product id, populates commerce_recurring_ref_product
- *  - order_ids: Array of Commerce order ids, populates commerce_recurring_order
+ *  - product_id: Commerce product id, populates commerce_recurring_ref_product.
+ *  - order_ids: Array of Commerce order ids, populates commerce_recurring_order.
  *
  * @see commerce_recurring_entity_property_info()
  * @see commerce_recurring_configure_recurring_entity_type()
@@ -353,7 +339,7 @@ function commerce_recurring_new(array $values = array()) {
 
   // Retrieve the properties to get from fields.
   if (isset($values['product_id'])) {
-    $values['commerce_recurring_ref_product'] =  array(
+    $values['commerce_recurring_ref_product'] = array(
       LANGUAGE_NONE => array(
         0 => array(
           'target_id' => $values['product_id'],
@@ -364,8 +350,8 @@ function commerce_recurring_new(array $values = array()) {
     unset($values['product_id']);
   }
   if (isset($values['order_ids']) && is_array($values['order_ids'])) {
-    foreach($values['order_ids'] as $delta => $order_id) {
-      $values['commerce_recurring_order'] =  array(
+    foreach ($values['order_ids'] as $delta => $order_id) {
+      $values['commerce_recurring_order'] = array(
         LANGUAGE_NONE => array(
           $delta => array(
             'target_id' => $order_id,
@@ -388,12 +374,12 @@ function commerce_recurring_new(array $values = array()) {
  * Due date is start date + initial date.
  * End date is optional, start date + end period.
  *
- * @param  $order
+ * @param array $order
  *   Commerce order to associate the recurring entity with.
- * @param $product
+ * @param array $product
  *   Commerce product associated with the recurring entity.
- * @param $fixed_price
- * @param $quantity
+ * @param int $fixed_price
+ * @param int $quantity
  *
  * @return entity $recurring_entity
  */
