@@ -332,6 +332,11 @@ function commerce_recurring_rules_set_price($line_item, $listing_price, $initial
       if (!empty($line_item->data['recurring_entity'])) {
         $recurring_entity = entity_load_single('commerce_recurring', $line_item->data['recurring_entity']);
         $recurring_wrapper = entity_metadata_wrapper('commerce_recurring', $recurring_entity);
+
+        // Allow the prices to be altered by other modules.
+        drupal_alter('commerce_recurring_initial_price', $initial_price, $line_item, $recurring_entity);
+        drupal_alter('commerce_recurring_recurring_price', $recurring_price, $line_item, $recurring_entity);
+
         // Case: Recurring price.
         $recurring_orders = $recurring_wrapper->commerce_recurring_order->value();
         // Empty the price components to recalculate them.
