@@ -100,6 +100,10 @@ class RecurringOrderClose extends JobTypeBase implements ContainerFactoryPluginI
       $this->recurringOrderManager->closeOrder($order);
     }
     catch (DeclineException $exception) {
+      // Both hard and soft declines need to be retried.
+      // In case of a soft decline, the retry might succeed in charging the
+      // same payment method. In case of a hard decline, the customer
+      // might have changed their payment method since the last attempt.
       return $this->handleDecline($order, $exception, $job->getNumRetries());
     }
 
