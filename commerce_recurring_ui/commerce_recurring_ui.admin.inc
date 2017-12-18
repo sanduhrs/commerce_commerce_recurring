@@ -5,6 +5,52 @@
  */
 
 /**
+ * Menu callback: display an overview of available types.
+ */
+function commerce_recurring_ui_types_overview() {
+  $header = array(
+    t('Entity Type'),
+    t('Operations'),
+  );
+
+  $rows = array();
+
+  // Loop through all defined recurring entity types.
+  foreach (commerce_recurring_types() as $type) {
+    $recurring_entity_type = ucfirst(strtr($type, '_', ' '));
+    // Build the operation links for the current recurring entity type.
+    $links = menu_contextual_links('commerce-recurring-entity-type', 'admin/commerce/recurring-entities/types', array(strtr($type, array('_' => '-'))));
+
+    // Add the recurring entity type's row to the table's rows array.
+    $rows[] = array(
+      t('@recurring_entity_type', array('@recurring_entity_type' => $recurring_entity_type)),
+      theme('links', array('links' => $links, 'attributes' => array('class' => 'links inline operations'))),
+    );
+  }
+
+  // If no recurring entity types are defined...
+  if (empty($rows)) {
+    // Add a standard empty row with a link to add a new recurring
+    // entity type.
+    $rows[] = array(
+      array(
+        'data' => t('There are no recurring entity types yet.'),
+        'colspan' => 2,
+      )
+    );
+  }
+
+  return theme('table', array('header' => $header, 'rows' => $rows));
+}
+
+/**
+ * Redirects a recurring entity type URL to its fields management page.
+ */
+function commerce_recurring_ui_entity_type_redirect($type) {
+  drupal_goto('admin/commerce/recurring-entities/types/' . strtr($type, '_', '-') . '/fields');
+}
+
+/**
 * Generates the recurring entity editing form.
 */
 function commerce_recurring_form($form, &$form_state, $recurring_entity, $op = 'edit') {

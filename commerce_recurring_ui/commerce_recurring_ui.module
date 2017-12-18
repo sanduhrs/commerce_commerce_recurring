@@ -6,6 +6,29 @@
 function commerce_recurring_ui_menu() {
   $items = array();
 
+  $items['admin/commerce/recurring-entities/types'] = array(
+    'title' => 'Recurring entity types',
+    'description' => 'Manage recurring entity types for your store.',
+    'page callback' => 'commerce_recurring_ui_types_overview',
+    'access arguments' => array('administer commerce_recurring entities'),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 0,
+    'file' => 'commerce_recurring_ui.admin.inc',
+  );
+  foreach (commerce_recurring_types() as $type) {
+    // Convert underscores to hyphens for the menu item argument.
+    $type_arg = strtr($type, '_', '-');
+    $title = ucfirst(strtr($type, '_', ' '));
+
+    $items['admin/commerce/recurring-entities/types/' . $type_arg] = array(
+      'title' => $title,
+      'page callback' => 'commerce_recurring_ui_entity_type_redirect',
+      'page arguments' => array($type),
+      'access arguments' => array('administer commerce_recurring entities'),
+      'file' => 'commerce_recurring_ui.admin.inc',
+    );
+  }
+
   $items['admin/commerce/recurring-entities/%commerce_recurring/edit'] = array(
     'title' => 'Edit',
     'page callback' => 'entity_ui_get_form',
@@ -40,6 +63,20 @@ function commerce_recurring_ui_menu() {
 }
 
 /**
+ * Implements hook_menu_alter().
+ */
+function commerce_recurring_ui_menu_alter(&$items) {
+  // Transform the field UI tabs into contextual links.
+  foreach (commerce_recurring_types() as $type) {
+    // Convert underscores to hyphens for the menu item argument.
+    $type_arg = strtr($type, '_', '-');
+
+    $items['admin/commerce/recurring-entities/types/' . $type_arg . '/fields']['context'] = MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE;
+    $items['admin/commerce/recurring-entities/types/' . $type_arg . '/display']['context'] = MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE;
+  }
+}
+
+/**
  * Implements hook_permission().
  */
 function commerce_recurring_ui_permission() {
@@ -56,19 +93,14 @@ function commerce_recurring_ui_permission() {
  * Implements hook_entity_info_alter().
  */
 function commerce_recurring_ui_entity_info_alter(&$entity_info) {
-  // @TODO Needs an improvement so it shows up in a different page (no tabs).
-  foreach (commerce_recurring_types() as $type) {
-    $entity_info['commerce_recurring']['bundles'][$type]['admin'] = array(
-      'path' => "admin/commerce/recurring-entities/$type",
+  // Expose the admin UI for commerce_recurring fields.
+  foreach ($entity_info['commerce_recurring']['bundles'] as $type => &$bundle) {
+    $bundle['admin'] = array(
+      'path' => 'admin/commerce/recurring-entities/types/' . strtr($type, '_', '-'),
+      'real path' => 'admin/commerce/recurring-entities/types/' . strtr($type, '_', '-'),
       'access arguments' => array('administer commerce_recurring entities'),
     );
   }
-
-  // Enable the entity API's admin UI.
-  $entity_info['commerce_recurring']['admin ui'] = array(
-    'path' => 'admin/commerce/recurring-entities',
-    'file' => 'commerce_recurring_ui.admin.inc',
-  );
 }
 
 /**
