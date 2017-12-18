@@ -20,6 +20,17 @@ interface ProraterInterface extends ConfigurablePluginInterface, PluginFormInter
   /**
    * Prorates the given order item.
    *
+   * When needed, the plugin can use separate logic for recurring and initial
+   * order items by looking at the order item type:
+   * @code
+   * if (strpos($order_item->bundle(), 'recurring_') === 0) {
+   *   // This is a recurring order item.
+   * }
+   * else {
+   *   // This is an initial order item.
+   * }
+   * @endcode
+   *
    * @param \Drupal\commerce_order\Entity\OrderItemInterface $order_item
    *   The order item.
    * @param \Drupal\commerce_recurring\BillingPeriod $partial_period
