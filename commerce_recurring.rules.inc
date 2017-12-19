@@ -527,12 +527,12 @@ function commerce_recurring_rules_generate_order_from_recurring() {
   }
   commerce_order_save($order);
 
-  $line_item = commerce_product_line_item_new($product_wrapper->value(), $recurring_entity->quantity);
-  $line_item->order_id = $order->order_id;
-
   // We need to add a flag to the line item to be able to know that we're in a
   // recurring context in rules.
-  $line_item->data['recurring_entity'] = $recurring_entity->id;
+  $data = array('recurring_entity' => $recurring_entity->id);
+  $line_item = commerce_product_line_item_new($product_wrapper->value(), $recurring_entity->quantity, 0, $data);
+  $line_item->order_id = $order->order_id;
+
   // Update the current line item price.
   rules_invoke_event('commerce_product_calculate_sell_price', $line_item);
   commerce_line_item_save($line_item);
