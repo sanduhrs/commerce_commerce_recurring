@@ -50,6 +50,12 @@ commerce_recurring.commerce_billing_schedule.plugin.fixed:
         unit:
           type: string
           label: Unit
+    start_month:
+      type: integer
+      label: 'Start month'
+    start_day:
+      type: integer
+      label: 'Start day'
 
 commerce_recurring.commerce_billing_schedule.plugin.rolling:
   type: mapping
