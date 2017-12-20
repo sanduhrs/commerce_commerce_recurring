@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\commerce_recurring;
+namespace Drupal\Tests\commerce_recurring\Kernel;
 
 use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\Core\Datetime\DrupalDateTime;

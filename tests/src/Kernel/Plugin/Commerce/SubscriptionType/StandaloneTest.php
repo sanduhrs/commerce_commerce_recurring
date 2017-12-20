@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\commerce_recurring\Plugin\Commerce\SubscriptionType;
+namespace Drupal\Tests\commerce_recurring\Kernel\Plugin\Commerce\SubscriptionType;
 
 use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\Charge;

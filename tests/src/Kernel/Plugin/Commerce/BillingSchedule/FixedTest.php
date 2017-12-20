@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\commerce_recurring\Plugin\Commerce\BillingSchedule;
+namespace Drupal\Tests\commerce_recurring\Kernel\Plugin\Commerce\BillingSchedule;
 
 use Drupal\commerce_recurring\Plugin\Commerce\BillingSchedule\Fixed;
 use Drupal\Core\Datetime\DrupalDateTime;
