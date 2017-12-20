@@ -3,15 +3,9 @@
 namespace Drupal\Tests\commerce_recurring\Kernel\Entity;
 
 use Drupal\commerce_order\Entity\Order;
-use Drupal\commerce_payment\Entity\PaymentGateway;
-use Drupal\commerce_payment\Entity\PaymentMethod;
 use Drupal\commerce_price\Price;
-use Drupal\commerce_product\Entity\ProductVariation;
-use Drupal\commerce_product\Entity\ProductVariationType;
-use Drupal\commerce_recurring\Entity\BillingSchedule;
 use Drupal\commerce_recurring\Entity\Subscription;
 use Drupal\commerce_recurring\Plugin\Commerce\SubscriptionType\SubscriptionTypeInterface;
-use Drupal\Tests\commerce\Kernel\CommerceKernelTestBase;
 use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
 
 /**

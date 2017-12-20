@@ -16,7 +16,7 @@
  * This hook may be used to modify plugin properties after they have been
  * specified by other modules.
  *
- * @param $plugins
+ * @param array $plugins
  *   An array of all the existing plugin definitions, passed by reference.
  *
  * @see \Drupal\commerce_recurring\ProraterManager
