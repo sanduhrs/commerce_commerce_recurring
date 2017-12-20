@@ -507,8 +507,8 @@ function commerce_recurring_rules_generate_order_from_recurring() {
 
   // @TODO Take care of order fail handling? http://drupal.org/node/1969350
 
-  // If the due date is over the end date, stop the recurring.
-  if (!empty($recurring_entity->end_date) && ($due_date > $recurring_entity->end_date)) {
+  // If the due date is over or equal to the end date, stop the recurring.
+  if (!empty($recurring_entity->end_date) && ($due_date >= $recurring_entity->end_date)) {
     commerce_recurring_stop_recurring($recurring_entity);
     return;
   }
