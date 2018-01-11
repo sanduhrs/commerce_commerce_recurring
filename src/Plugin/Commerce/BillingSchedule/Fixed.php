@@ -45,6 +45,7 @@ class Fixed extends IntervalBase {
       '#title' => $this->t('Start month'),
       '#description' => $this->t('The month in which the billing period will start.'),
       '#options' => DateHelper::monthNames(TRUE),
+      '#default_value' => $this->configuration['start_month'],
       '#states' => [
         'visible' => [
           ':input[name="configuration[fixed][interval][unit]"]' => ['value' => 'year'],
@@ -56,6 +57,7 @@ class Fixed extends IntervalBase {
       '#title' => $this->t('Start day'),
       '#description' => $this->t('The day on which the billing period will start.'),
       '#options' => DateHelper::days(TRUE),
+      '#default_value' => $this->configuration['start_day'],
       '#states' => [
         'visible' => [
           ':input[name="configuration[fixed][interval][unit]"]' => [
