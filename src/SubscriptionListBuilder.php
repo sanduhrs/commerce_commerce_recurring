@@ -39,7 +39,7 @@ class SubscriptionListBuilder extends EntityListBuilder {
       'customer' => $entity->getCustomer()->getDisplayName(),
       'state' => $entity->getState()->getLabel(),
       'start_date' => $entity->getStartDate()->format('M jS Y H:i:s'),
-      'end_date' => $entity->getEndDate() ? $entity->getStartDate()->format('M jS Y H:i:s') : '-',
+      'end_date' => $entity->getEndDate() ? $entity->getEndDate()->format('M jS Y H:i:s') : '-',
     ];
 
     return $row + parent::buildRow($entity);
