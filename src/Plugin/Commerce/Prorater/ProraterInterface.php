@@ -23,7 +23,7 @@ interface ProraterInterface extends ConfigurablePluginInterface, PluginFormInter
    * When needed, the plugin can use separate logic for recurring and initial
    * order items by looking at the order item type:
    * @code
-   * if (strpos($order_item->bundle(), 'recurring_') === 0) {
+   * if (in_array($order_item->bundle(), commerce_recurring_order_item_types())) {
    *   // This is a recurring order item.
    * }
    * else {

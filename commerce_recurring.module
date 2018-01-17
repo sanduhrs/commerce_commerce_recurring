@@ -63,7 +63,7 @@ function commerce_recurring_form_commerce_order_type_form_alter(array &$form, Fo
 function commerce_recurring_form_commerce_order_item_type_form_alter(array &$form, FormStateInterface $form_state) {
   /** @var \Drupal\commerce_order\Entity\OrderTypeInterface $order_item_type */
   $order_item_type = $form_state->getFormObject()->getEntity();
-  if (strpos($order_item_type->id(), 'recurring_') !== 0) {
+  if (!in_array($order_item_type->id(), commerce_recurring_order_item_types())) {
     // Hide the recurring order type from the dropdown, to avoid confusing
     // merchants who are configuring non-recurring order item types.
     unset($form['orderType']['#options']['recurring']);
@@ -80,8 +80,18 @@ function commerce_recurring_form_commerce_product_variation_type_form_alter(arra
   // Recurring order item types are used by the module, they should never
   // be selected by the merchant for a product variation type.
   foreach ($form['orderItemType']['#options'] as $id => $label) {
-    if (strpos($id, 'recurring_') === 0) {
+    if (in_array($id, commerce_recurring_order_item_types())) {
       unset($form['orderItemType']['#options'][$id]);
     }
   }
+}
+
+/**
+ * Gets the recurring order item types.
+ *
+ * @return string[]
+ *   The recurring order item type IDs.
+ */
+function commerce_recurring_order_item_types() {
+  return ['recurring_standalone', 'recurring_product_variation'];
 }
