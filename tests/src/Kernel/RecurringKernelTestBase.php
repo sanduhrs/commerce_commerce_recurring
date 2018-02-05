@@ -13,7 +13,7 @@ use Drupal\Tests\commerce\Kernel\CommerceKernelTestBase;
 /**
  * Provides a base class for Recurring kernel tests.
  */
-class RecurringKernelTestBase extends CommerceKernelTestBase {
+abstract class RecurringKernelTestBase extends CommerceKernelTestBase {
 
   /**
    * {@inheritdoc}
