@@ -15,6 +15,5 @@ locked: true
 cardinality: 1
 translatable: false
 indexes: {  }
-settings: {  }
 persist_with_no_fields: false
 custom_storage: false
