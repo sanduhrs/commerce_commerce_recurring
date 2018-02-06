@@ -176,12 +176,15 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     $subscriptions = [];
     foreach ($order->getItems() as $order_item) {
       if ($order_item->get('subscription')->isEmpty()) {
-        // There should never be a recurring order item without a subscription.
+        // A recurring order item without a subscription ID is malformed.
         continue;
       }
       /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
       $subscription = $order_item->get('subscription')->entity;
-      $subscriptions[$subscription->id()] = $subscription;
+      // Guard against deleted subscription entities.
+      if ($subscription) {
+        $subscriptions[$subscription->id()] = $subscription;
+      }
     }
 
     return $subscriptions;
