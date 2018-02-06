@@ -5,6 +5,7 @@ namespace Drupal\Tests\commerce_recurring\Kernel;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_order\Entity\OrderItemType;
+use Drupal\commerce_order\Entity\OrderType;
 use Drupal\commerce_recurring\Entity\Subscription;
 
 /**
@@ -26,12 +27,19 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
       'label' => 'Test',
       'orderType' => 'default',
     ])->save();
+
+    $order_type = OrderType::load('default');
+    $order_type->setWorkflowId('order_default_validation');
+    $order_type->save();
   }
 
   /**
-   * Tests the creation of subscriptions when the order is placed.
+   * Tests the initial order lifecycle.
+   *
+   * Placing an initial order should create subscriptions. Canceling the
+   * initial order should cancel the previously created subscriptions.
    */
-  public function testCreation() {
+  public function testInitialLifecycle() {
     $first_order_item = OrderItem::create([
       'type' => 'test',
       'title' => 'I promise not to start a subscription',
@@ -65,7 +73,8 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $subscriptions = Subscription::loadMultiple();
     $this->assertCount(0, $subscriptions);
 
-    $initial_order->state = 'completed';
+    $workflow = $initial_order->getState()->getWorkflow();
+    $initial_order->getState()->applyTransition($workflow->getTransition('place'));
     $initial_order->save();
 
     $subscriptions = Subscription::loadMultiple();
@@ -99,6 +108,12 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $this->assertCount(1, $order_items);
     $order_item = reset($order_items);
     $this->assertEquals($subscription->id(), $order_item->get('subscription')->target_id);
+
+    // Test initial order cancellation.
+    $initial_order->getState()->applyTransition($workflow->getTransition('cancel'));
+    $initial_order->save();
+    $subscription = $this->reloadEntity($subscription);
+    $this->assertEquals('canceled', $subscription->getState()->value);
   }
 
 }
