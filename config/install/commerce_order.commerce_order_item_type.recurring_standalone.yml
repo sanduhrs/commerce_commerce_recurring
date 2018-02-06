@@ -9,3 +9,4 @@ id: recurring_standalone
 purchasableEntityType: ''
 orderType: recurring
 traits: {  }
+locked: true

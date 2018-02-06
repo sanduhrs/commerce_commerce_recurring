@@ -10,3 +10,4 @@ id: recurring_product_variation
 purchasableEntityType: commerce_product_variation
 orderType: recurring
 traits: {  }
+locked: true
