@@ -113,7 +113,10 @@ class OrderSubscriber implements EventSubscriberInterface {
       }
 
       /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface[] $subscriptions */
-      $subscriptions = $subscription_storage->loadByProperties(['initial_order' => $order->id()]);
+      $subscriptions = $subscription_storage->loadByProperties([
+        'initial_order' => $order->id(),
+        'state' => 'active',
+      ]);
       foreach ($subscriptions as $subscription) {
         $subscription->setState('canceled');
         $subscription->save();
