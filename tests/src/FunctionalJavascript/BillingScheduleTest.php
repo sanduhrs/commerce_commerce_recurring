@@ -52,6 +52,7 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
       'plugin' => 'fixed',
       'configuration[fixed][interval][number]' => '2',
       'configuration[fixed][interval][unit]' => 'month',
+      'configuration[fixed][start_day]' => '4',
       'prorater' => 'proportional',
       // Setting the 'id' can fail if focus switches to another field.
       // This is a bug in the machine name JS that can be reproduced manually.
@@ -74,6 +75,8 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
         'number' => '2',
         'unit' => 'month',
       ],
+      'start_month' => '1',
+      'start_day' => '4',
     ], $billing_schedule->getPluginConfiguration());
     $this->assertEquals($billing_schedule->getPluginConfiguration(), $billing_schedule->getPlugin()->getConfiguration());
     $this->assertEquals('proportional', $billing_schedule->getProraterId());
@@ -94,6 +97,7 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
           'number' => '2',
           'unit' => 'month',
         ],
+        'start_day' => '4',
       ],
       'prorater' => 'proportional',
       'proraterConfiguration' => [],
@@ -114,6 +118,8 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
       'dunning[unpaid_subscription_state]' => 'active',
       'configuration[fixed][interval][number]' => '1',
       'configuration[fixed][interval][unit]' => 'year',
+      'configuration[fixed][start_month]' => '2',
+      'configuration[fixed][start_day]' => '5',
     ], 'Save');
 
     \Drupal::entityTypeManager()->getStorage('commerce_billing_schedule')->resetCache();
@@ -130,6 +136,8 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
         'number' => '1',
         'unit' => 'year',
       ],
+      'start_month' => '2',
+      'start_day' => '5',
     ], $billing_schedule->getPluginConfiguration());
     $this->assertEquals($billing_schedule->getPluginConfiguration(), $billing_schedule->getPlugin()->getConfiguration());
     $this->assertEquals('full_price', $billing_schedule->getProraterId());
