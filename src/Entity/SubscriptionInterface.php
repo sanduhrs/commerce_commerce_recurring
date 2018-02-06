@@ -235,6 +235,35 @@ interface SubscriptionInterface extends ContentEntityInterface {
   public function setState($state_id);
 
   /**
+   * Gets the initial order.
+   *
+   * This is the non-recurring order which started the subscription.
+   * Might not be available for manually created subscriptions.
+   *
+   * @return \Drupal\commerce_order\Entity\OrderInterface|null
+   *   The initial order, or NULL if not known.
+   */
+  public function getInitialOrder();
+
+  /**
+   * Sets the initial order.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $initial_order
+   *   The initial order.
+   *
+   * @return $this
+   */
+  public function setInitialOrder(OrderInterface $initial_order);
+
+  /**
+   * Gets the initial order ID.
+   *
+   * @return int|null
+   *   The initial order ID, or NULL if not known.
+   */
+  public function getInitialOrderId();
+
+  /**
    * Gets the recurring order IDs.
    *
    * @return int[]

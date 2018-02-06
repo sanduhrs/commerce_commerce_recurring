@@ -261,6 +261,28 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
   /**
    * {@inheritdoc}
    */
+  public function getInitialOrder() {
+    return $this->get('initial_order')->entity;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setInitialOrder(OrderInterface $initial_order) {
+    $this->set('initial_order', $initial_order);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getInitialOrderId() {
+    return $this->get('initial_order')->target_id;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getOrderIds() {
     $order_ids = [];
     foreach ($this->get('orders') as $field_item) {
@@ -556,6 +578,19 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'type' => 'list_default',
         'weight' => 0,
       ])
+      ->setDisplayConfigurable('view', TRUE);
+
+    $fields['initial_order'] = BaseFieldDefinition::create('entity_reference')
+      ->setLabel(t('Initial order'))
+      ->setDescription(t('The non-recurring order which started the subscription.'))
+      ->setSetting('target_type', 'commerce_order')
+      ->setSetting('handler', 'default')
+      ->setSetting('display_description', TRUE)
+      ->setDisplayOptions('form', [
+        'type' => 'entity_reference_autocomplete',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['orders'] = BaseFieldDefinition::create('entity_reference')

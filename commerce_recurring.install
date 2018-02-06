@@ -1,0 +1,29 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the commerce_recurring module.
+ */
+
+use Drupal\Core\Field\BaseFieldDefinition;
+
+/**
+ * Add the 'initial_order' field to 'commerce_subscription' entities.
+ */
+function commerce_recurring_update_8100(&$sandbox) {
+  $storage_definition = BaseFieldDefinition::create('entity_reference')
+    ->setLabel(t('Initial order'))
+    ->setDescription(t('The non-recurring order which started the subscription.'))
+    ->setSetting('target_type', 'commerce_order')
+    ->setSetting('handler', 'default')
+    ->setSetting('display_description', TRUE)
+    ->setDisplayOptions('form', [
+      'type' => 'entity_reference_autocomplete',
+      'weight' => 0,
+    ])
+    ->setDisplayConfigurable('form', TRUE)
+    ->setDisplayConfigurable('view', TRUE);
+
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  $update_manager->installFieldStorageDefinition('initial_order', 'commerce_subscription', 'commerce_recurring', $storage_definition);
+}

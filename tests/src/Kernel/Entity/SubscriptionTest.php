@@ -38,6 +38,9 @@ class SubscriptionTest extends RecurringKernelTestBase {
    * @covers ::setUnitPrice
    * @covers ::getState
    * @covers ::setState
+   * @covers ::getInitialOrder
+   * @covers ::setInitialOrder
+   * @covers ::getInitialOrderId
    * @covers ::getOrderIds
    * @covers ::getOrders
    * @covers ::setOrders
@@ -54,6 +57,14 @@ class SubscriptionTest extends RecurringKernelTestBase {
    * @covers ::setEndTime
    */
   public function testSubscription() {
+    /** @var \Drupal\commerce_order\Entity\OrderInterface $initial_order */
+    $initial_order = Order::create([
+      'type' => 'default',
+      'store_id' => $this->store,
+    ]);
+    $initial_order->save();
+    $initial_order = $this->reloadEntity($initial_order);
+
     $subscription = Subscription::create([
       'type' => 'product_variation',
       'store_id' => $this->store->id(),
@@ -101,6 +112,11 @@ class SubscriptionTest extends RecurringKernelTestBase {
     $this->assertEquals('pending', $subscription->getState()->value);
     $subscription->setState('expired');
     $this->assertEquals('expired', $subscription->getState()->value);
+
+    $this->assertNull($subscription->getInitialOrder());
+    $subscription->setInitialOrder($initial_order);
+    $this->assertEquals($initial_order, $subscription->getInitialOrder());
+    $this->assertEquals($initial_order->id(), $subscription->getInitialOrderId());
 
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = Order::create([

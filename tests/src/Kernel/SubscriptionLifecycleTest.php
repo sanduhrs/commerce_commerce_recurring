@@ -82,6 +82,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $this->assertEquals('3', $subscription->getQuantity());
     $this->assertEquals($this->variation->getPrice(), $subscription->getUnitPrice());
     $this->assertEquals('active', $subscription->getState()->value);
+    $this->assertEquals($initial_order->id(), $subscription->getInitialOrderId());
 
     // Confirm that a recurring order is present.
     $order_storage = \Drupal::entityTypeManager()->getStorage('commerce_order');

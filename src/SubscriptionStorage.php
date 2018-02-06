@@ -30,6 +30,7 @@ class SubscriptionStorage extends CommerceContentEntityStorage implements Subscr
       $values += [
         'store_id' => $order->getStoreId(),
         'uid' => $order->getCustomerId(),
+        'initial_order' => $order->id(),
       ];
     }
     /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
