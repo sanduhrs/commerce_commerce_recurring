@@ -53,7 +53,7 @@ function commerce_recurring_ui_entity_type_redirect($type) {
 /**
 * Generates the recurring entity editing form.
 */
-function commerce_recurring_form($form, &$form_state, $recurring_entity, $op = 'edit') {
+function commerce_recurring_edit_product_form($form, &$form_state, $recurring_entity, $op = 'edit') {
   // Alter the date properties.
   $form['start_date'] = array(
     '#type' => 'date_popup',
@@ -117,7 +117,7 @@ function commerce_recurring_form($form, &$form_state, $recurring_entity, $op = '
 /**
  * Form API validate callback for the recurring form.
  */
-function commerce_recurring_form_validate(&$form, &$form_state) {
+function commerce_recurring_edit_product_form_validate(&$form, &$form_state) {
   $dates = array('start_date', 'due_date', 'end_date');
   // Ensure that the dates stored are timestamps.
   foreach ($dates as $date) {
@@ -145,7 +145,7 @@ function commerce_recurring_form_validate(&$form, &$form_state) {
 /**
 * Form API submit callback for the recurring form.
 */
-function commerce_recurring_form_submit(&$form, &$form_state) {
+function commerce_recurring_edit_product_form_submit(&$form, &$form_state) {
   $recurring_entity = entity_ui_form_submit_build_entity($form, $form_state);
   // Save and go back.
   $recurring_entity->save();
