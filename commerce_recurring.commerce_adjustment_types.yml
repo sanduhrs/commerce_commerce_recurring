@@ -1,6 +1,6 @@
-recurring:
-  label: 'Recurring'
-  singular_label: 'recurring adjustment'
-  plural_label: 'recurring adjustments'
+subscription:
+  label: 'Subscription'
+  singular_label: 'subscription adjustment'
+  plural_label: 'subscription adjustments'
   has_ui: false
   weight: 10

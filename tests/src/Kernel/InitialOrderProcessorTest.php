@@ -74,7 +74,7 @@ class InitialOrderProcessorTest extends RecurringKernelTestBase {
     $this->assertNotEquals($order_item->getUnitPrice(), $order_item->getAdjustedUnitPrice());
     $adjustments = $order_item->getAdjustments();
     $adjustment = reset($adjustments);
-    $this->assertEquals('recurring', $adjustment->getType());
+    $this->assertEquals('subscription', $adjustment->getType());
     $this->assertEquals(t('Proration'), $adjustment->getLabel());
   }
 

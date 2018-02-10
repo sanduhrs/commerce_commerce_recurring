@@ -14,7 +14,7 @@ services:
     class: Drupal\commerce_recurring\InitialOrderProcessor
     arguments: ['@datetime.time']
     tags:
-      - { name: commerce_order.order_processor, priority: 40 }
+      - { name: commerce_order.order_processor, priority: 40, adjustment_type: subscription }
 
   commerce_recurring.recurring_order_processor:
     class: Drupal\commerce_recurring\RecurringOrderProcessor

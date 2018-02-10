@@ -67,7 +67,7 @@ class InitialOrderProcessor implements OrderProcessorInterface {
         if (!$prorated_unit_price->equals($unit_price)) {
           $difference = $unit_price->subtract($prorated_unit_price);
           $order_item->addAdjustment(new Adjustment([
-            'type' => 'recurring',
+            'type' => 'subscription',
             'label' => t('Proration'),
             'amount' => $difference->multiply('-1'),
             'source_id' => $billing_schedule->id(),
@@ -77,7 +77,7 @@ class InitialOrderProcessor implements OrderProcessorInterface {
       else {
         // A postpaid purchased entity is free in the initial order.
         $order_item->addAdjustment(new Adjustment([
-          'type' => 'recurring',
+          'type' => 'subscription',
           'label' => t('Pay later'),
           'amount' => $order_item->getAdjustedUnitPrice()->multiply('-1'),
           'source_id' => $billing_schedule->id(),
