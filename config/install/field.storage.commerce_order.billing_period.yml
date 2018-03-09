@@ -4,7 +4,6 @@ dependencies:
   module:
     - commerce_order
     - commerce_recurring
-dependencies: {}
 id: commerce_order.billing_period
 field_name: billing_period
 entity_type: commerce_order
