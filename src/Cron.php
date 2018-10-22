@@ -5,7 +5,6 @@ namespace Drupal\commerce_recurring;
 use Drupal\advancedqueue\Job;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Default cron implementation.
@@ -37,16 +36,6 @@ class Cron implements CronInterface {
   public function __construct(EntityTypeManagerInterface $entity_type_manager, TimeInterface $time) {
     $this->entityTypeManager = $entity_type_manager;
     $this->time = $time;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(ContainerInterface $container) {
-    return new static(
-      $container->get('entity_type.manager'),
-      $container->get('datetime.time')
-    );
   }
 
   /**
