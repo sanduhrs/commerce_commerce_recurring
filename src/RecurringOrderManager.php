@@ -294,7 +294,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
         $payment_methods[$payment_method->id()] = $payment_method;
       }
     }
-    ksort($payment_methods, SORT_NUMERIC);
+    krsort($payment_methods, SORT_NUMERIC);
     $payment_method = reset($payment_methods);
 
     return $payment_method ?: NULL;

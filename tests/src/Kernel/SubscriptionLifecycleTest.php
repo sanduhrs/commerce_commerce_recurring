@@ -98,6 +98,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $result = $order_storage->getQuery()
       ->condition('type', 'recurring')
       ->pager(1)
+      ->accessCheck(FALSE)
       ->execute();
     $this->assertNotEmpty($result);
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
