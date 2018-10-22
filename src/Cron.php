@@ -58,6 +58,7 @@ class Cron implements CronInterface {
       ->condition('type', 'recurring')
       ->condition('state', 'draft')
       ->condition('billing_period.ends', $this->time->getRequestTime(), '<=')
+      ->accessCheck(FALSE)
       ->execute();
     if (!$order_ids) {
       return;
