@@ -54,10 +54,6 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     // Allow the type to modify the subscription and order before they're saved.
     $subscription->getType()->onSubscriptionActivate($subscription, $order);
 
-    // @todo The order should save its own unsaved order items.
-    foreach ($order->getItems() as $order_item) {
-      $order_item->save();
-    }
     $order->save();
     $subscription->addOrder($order);
     $subscription->save();
@@ -155,11 +151,6 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     $this->applyCharges($next_order, $subscription, $next_billing_period);
     // Allow the subscription type to modify the order before it is saved.
     $subscription->getType()->onSubscriptionRenew($subscription, $order, $next_order);
-
-    // @todo The order should save its own unsaved order items.
-    foreach ($next_order->getItems() as $order_item) {
-      $order_item->save();
-    }
     $next_order->save();
     // Update the subscription with the new order and renewal timestamp.
     $subscription->addOrder($next_order);
@@ -262,7 +253,10 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
       $prorater = $subscription->getBillingSchedule()->getProrater();
       $prorated_unit_price = $prorater->prorateOrderItem($order_item, $charge->getBillingPeriod(), $billing_period);
       $order_item->setUnitPrice($prorated_unit_price, TRUE);
-
+      // Avoid setting unsaved order items for now, to avoid #3017259.
+      if ($order_item->isNew()) {
+        $order_item->save();
+      }
       $order_items[] = $order_item;
     }
     $order->setItems($order_items);
