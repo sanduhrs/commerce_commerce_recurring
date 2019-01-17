@@ -30,6 +30,8 @@ class CronTest extends RecurringKernelTestBase {
   }
 
   /**
+   * Test run for recurring orders.
+   *
    * @covers ::run
    */
   public function testRun() {
@@ -79,6 +81,55 @@ class CronTest extends RecurringKernelTestBase {
     $this->assertEquals('commerce_recurring_order_close', $job1->getType());
     $this->assertArraySubset(['order_id' => '1'], $job2->getPayload());
     $this->assertEquals('commerce_recurring_order_renew', $job2->getType());
+  }
+
+  /**
+   * Test run for pending subscriptions.
+   *
+   * @covers ::run
+   */
+  public function testPendingSubscriptionsRun() {
+    // Pending subscription should be activated.
+    $first_subscription = Subscription::create([
+      'type' => 'product_variation',
+      'store_id' => $this->store->id(),
+      'billing_schedule' => $this->billingSchedule,
+      'uid' => $this->user,
+      'payment_method' => $this->paymentMethod,
+      'purchased_entity' => $this->variation,
+      'title' => $this->variation->getOrderItemTitle(),
+      'unit_price' => new Price('2', 'USD'),
+      'state' => 'pending',
+      'starts' => strtotime('2017-02-24 17:00'),
+    ]);
+    $first_subscription->save();
+
+    // Canceled subscription should not be activated.
+    $second_subscription = Subscription::create([
+      'type' => 'product_variation',
+      'store_id' => $this->store->id(),
+      'billing_schedule' => $this->billingSchedule,
+      'uid' => $this->user,
+      'payment_method' => $this->paymentMethod,
+      'purchased_entity' => $this->variation,
+      'title' => $this->variation->getOrderItemTitle(),
+      'unit_price' => new Price('2', 'USD'),
+      'state' => 'canceled',
+      'starts' => strtotime('2017-02-24 17:00:00'),
+    ]);
+    $second_subscription->save();
+
+    // Confirm that only the first subscription was queued.
+    $this->container->get('commerce_recurring.cron')->run();
+
+    /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
+    $queue = Queue::load('commerce_recurring');
+    $counts = array_filter($queue->getBackend()->countJobs());
+    $this->assertEquals([Job::STATE_QUEUED => 1], $counts);
+
+    $job = $queue->getBackend()->claimJob();
+    $this->assertArraySubset(['subscription_id' => '1'], $job->getPayload());
+    $this->assertEquals('commerce_subscription_activate', $job->getType());
   }
 
 }

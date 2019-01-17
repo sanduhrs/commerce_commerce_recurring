@@ -49,24 +49,36 @@ class Cron implements CronInterface {
       ->condition('billing_period.ends', $this->time->getRequestTime(), '<=')
       ->accessCheck(FALSE)
       ->execute();
-    if (!$order_ids) {
+
+    $subscription_storage = $this->entityTypeManager->getStorage('commerce_subscription');
+    $subscription_ids = $subscription_storage->getQuery()
+      ->condition('state', 'pending')
+      ->condition('starts', $this->time->getRequestTime(), '<')
+      ->execute();
+
+    if (!$order_ids && !$subscription_ids) {
       return;
     }
     $queue_storage = $this->entityTypeManager->getStorage('advancedqueue_queue');
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $recurring_queue */
     $recurring_queue = $queue_storage->load('commerce_recurring');
-    /** @var \Drupal\commerce_order\Entity\OrderInterface[] $orders */
-    $orders = $order_storage->loadMultiple($order_ids);
 
-    foreach ($orders as $order) {
+    foreach ($order_ids as $order_id) {
       $close_job = Job::create('commerce_recurring_order_close', [
-        'order_id' => $order->id(),
+        'order_id' => $order_id,
       ]);
       $renew_job = Job::create('commerce_recurring_order_renew', [
-        'order_id' => $order->id(),
+        'order_id' => $order_id,
       ]);
       $recurring_queue->enqueueJob($close_job);
       $recurring_queue->enqueueJob($renew_job);
+    }
+
+    foreach ($subscription_ids as $subscription_id) {
+      $activate_job = Job::create('commerce_subscription_activate', [
+        'subscription_id' => $subscription_id,
+      ]);
+      $recurring_queue->enqueueJob($activate_job);
     }
   }
 
