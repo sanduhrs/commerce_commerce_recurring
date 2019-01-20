@@ -52,8 +52,8 @@ class Cron implements CronInterface {
 
     $subscription_storage = $this->entityTypeManager->getStorage('commerce_subscription');
     $subscription_ids = $subscription_storage->getQuery()
-      ->condition('state', 'pending')
-      ->condition('starts', $this->time->getRequestTime(), '<')
+      ->condition('state', ['pending', 'trial'], 'IN')
+      ->condition('starts', $this->time->getRequestTime(), '<=')
       ->execute();
 
     if (!$order_ids && !$subscription_ids) {

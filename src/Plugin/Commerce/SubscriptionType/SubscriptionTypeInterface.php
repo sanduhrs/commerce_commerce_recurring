@@ -63,7 +63,30 @@ interface SubscriptionTypeInterface extends BundlePluginInterface {
   public function onSubscriptionCreate(SubscriptionInterface $subscription, OrderItemInterface $order_item);
 
   /**
+   * Acts on a subscription after a trial has been started.
+   *
+   * Called before the subscription is saved.
+   *
+   * @param \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription
+   *   The subscription.
+   */
+  public function onSubscriptionTrialStart(SubscriptionInterface $subscription);
+
+  /**
+   * Acts on a subscription after a trial has been canceled.
+   *
+   * Called before the subscription is saved.
+   *
+   * @param \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription
+   *   The subscription.
+   */
+  public function onSubscriptionTrialCancel(SubscriptionInterface $subscription);
+
+  /**
    * Acts on a subscription after it has been activated.
+   *
+   * Detecting if a trial just ended can be achieved by checking the original
+   * subscription state ($subscription->original->getState()->value == 'trial').
    *
    * Called before the subscription and recurring order are saved.
    *

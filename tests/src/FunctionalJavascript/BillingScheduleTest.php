@@ -50,6 +50,9 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
       'dunning[retry][2]' => '3',
       'dunning[unpaid_subscription_state]' => 'canceled',
       'plugin' => 'fixed',
+      'configuration[fixed][trial_interval][allow_trials]' => 1,
+      'configuration[fixed][trial_interval][number]' => '2',
+      'configuration[fixed][trial_interval][unit]' => 'month',
       'configuration[fixed][interval][number]' => '2',
       'configuration[fixed][interval][unit]' => 'month',
       'configuration[fixed][start_day]' => '4',
@@ -70,6 +73,7 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
     $this->assertEquals([1, 2, 3], $billing_schedule->getRetrySchedule());
     $this->assertEquals('canceled', $billing_schedule->getUnpaidSubscriptionState());
     $this->assertEquals('fixed', $billing_schedule->getPluginId());
+    $this->assertTrue($billing_schedule->getPlugin()->allowTrials());
     $this->assertEquals([
       'interval' => [
         'number' => '2',
@@ -77,6 +81,10 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
       ],
       'start_month' => '1',
       'start_day' => '4',
+      'trial_interval' => [
+        'number' => '2',
+        'unit' => 'month',
+      ],
     ], $billing_schedule->getPluginConfiguration());
     $this->assertEquals($billing_schedule->getPluginConfiguration(), $billing_schedule->getPlugin()->getConfiguration());
     $this->assertEquals('proportional', $billing_schedule->getProraterId());
@@ -138,6 +146,7 @@ class BillingScheduleTest extends CommerceBrowserTestBase {
       ],
       'start_month' => '2',
       'start_day' => '5',
+      'trial_interval' => [],
     ], $billing_schedule->getPluginConfiguration());
     $this->assertEquals($billing_schedule->getPluginConfiguration(), $billing_schedule->getPlugin()->getConfiguration());
     $this->assertEquals('full_price', $billing_schedule->getProraterId());

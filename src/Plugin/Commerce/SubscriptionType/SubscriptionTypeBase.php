@@ -82,7 +82,7 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
    * {@inheritdoc}
    */
   public function collectCharges(SubscriptionInterface $subscription, BillingPeriod $billing_period) {
-    $start_date = $subscription->getStartDate();;
+    $start_date = $subscription->getStartDate();
     $end_date = $subscription->getEndDate();
     $billing_type = $subscription->getBillingSchedule()->getBillingType();
     if ($billing_type == BillingScheduleInterface::BILLING_TYPE_PREPAID) {
@@ -127,6 +127,16 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
    * {@inheritdoc}
    */
   public function onSubscriptionCreate(SubscriptionInterface $subscription, OrderItemInterface $order_item) {}
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onSubscriptionTrialStart(SubscriptionInterface $subscription) {}
+
+  /**
+   * {@inheritdoc}
+   */
+  public function onSubscriptionTrialCancel(SubscriptionInterface $subscription) {}
 
   /**
    * {@inheritdoc}

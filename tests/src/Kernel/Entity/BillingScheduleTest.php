@@ -83,18 +83,27 @@ class BillingScheduleTest extends KernelTestBase {
 
     $this->assertEquals('rolling', $billing_schedule->getPluginId());
     $this->assertEquals([
+      'trial_interval' => [],
       'interval' => [
         'number' => '1',
         'unit' => 'month',
       ],
     ], $billing_schedule->getPluginConfiguration());
     $billing_schedule->setPluginConfiguration([
+      'trial_interval' => [
+        'number' => '14',
+        'unit' => 'day',
+      ],
       'interval' => [
         'number' => '2',
         'unit' => 'year',
       ],
     ]);
     $this->assertEquals([
+      'trial_interval' => [
+        'number' => '14',
+        'unit' => 'day',
+      ],
       'interval' => [
         'number' => '2',
         'unit' => 'year',

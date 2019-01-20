@@ -40,6 +40,16 @@ commerce_recurring.commerce_billing_schedule.plugin.*:
 commerce_recurring.commerce_billing_schedule.plugin.fixed:
   type: mapping
   mapping:
+    trial_interval:
+      type: mapping
+      label: 'Trial interval'
+      mapping:
+        number:
+          type: integer
+          label: Number
+        unit:
+          type: string
+          label: Unit
     interval:
       type: mapping
       label: 'Interval'
@@ -60,6 +70,16 @@ commerce_recurring.commerce_billing_schedule.plugin.fixed:
 commerce_recurring.commerce_billing_schedule.plugin.rolling:
   type: mapping
   mapping:
+    trial_interval:
+      type: mapping
+      label: 'Trial interval'
+      mapping:
+        number:
+          type: integer
+          label: Number
+        unit:
+          type: string
+          label: Unit
     interval:
       type: mapping
       label: 'Interval'

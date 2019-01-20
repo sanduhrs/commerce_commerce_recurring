@@ -126,7 +126,7 @@ interface BillingScheduleInterface extends ConfigEntityInterface, EntityWithPlug
   /**
    * Gets the billing schedule plugin configuration.
    *
-   * @return string
+   * @return array
    *   The billing schedule plugin configuration.
    */
   public function getPluginConfiguration();

@@ -50,6 +50,7 @@ class InitialOrderProcessor implements OrderProcessorInterface {
       if (!$billing_schedule) {
         continue;
       }
+      $allow_trials = $billing_schedule->getPlugin()->allowTrials();
 
       // Price differences are added as adjustments, to preserve the original
       // price, for both display purposes and for being able to transfer the
@@ -57,29 +58,42 @@ class InitialOrderProcessor implements OrderProcessorInterface {
       // It's assumed that the customer won't see the actual adjustment,
       // because the cart/order summary was hidden or restyled.
       if ($billing_schedule->getBillingType() == BillingScheduleInterface::BILLING_TYPE_PREPAID) {
-        // Prepaid subscriptions need to be prorated so that the customer
-        // pays only for the portion of the period that they'll get.
-        $unit_price = $order_item->getUnitPrice();
-        $billing_period = $billing_schedule->getPlugin()->generateFirstBillingPeriod($start_date);
-        $partial_billing_period = new BillingPeriod($start_date, $billing_period->getEndDate());
-        $prorater = $billing_schedule->getProrater();
-        $prorated_unit_price = $prorater->prorateOrderItem($order_item, $partial_billing_period, $billing_period);
-        if (!$prorated_unit_price->equals($unit_price)) {
-          $difference = $unit_price->subtract($prorated_unit_price);
+        if ($allow_trials) {
           $order_item->addAdjustment(new Adjustment([
             'type' => 'subscription',
-            'label' => t('Proration'),
-            'amount' => $difference->multiply('-1'),
+            'label' => t('Free trial'),
+            'amount' => $order_item->getTotalPrice()->multiply('-1'),
             'source_id' => $billing_schedule->id(),
           ]));
         }
+        else {
+          // Prepaid subscriptions need to be prorated so that the customer
+          // pays only for the portion of the period that they'll get.
+          $unit_price = $order_item->getUnitPrice();
+          $billing_period = $billing_schedule->getPlugin()->generateFirstBillingPeriod($start_date);
+          $partial_billing_period = new BillingPeriod($start_date, $billing_period->getEndDate());
+          $prorater = $billing_schedule->getProrater();
+          $prorated_unit_price = $prorater->prorateOrderItem($order_item, $partial_billing_period, $billing_period);
+          if (!$prorated_unit_price->equals($unit_price)) {
+            $adjustment_amount = $unit_price->subtract($prorated_unit_price);
+            $adjustment_amount = $adjustment_amount->multiply($order_item->getQuantity());
+
+            $order_item->addAdjustment(new Adjustment([
+              'type' => 'subscription',
+              'label' => t('Proration'),
+              'amount' => $adjustment_amount->multiply('-1'),
+              'source_id' => $billing_schedule->id(),
+            ]));
+          }
+        }
       }
       else {
+        $label = $allow_trials ? t('Pay later') : t('Free trial');
         // A postpaid purchased entity is free in the initial order.
         $order_item->addAdjustment(new Adjustment([
           'type' => 'subscription',
-          'label' => t('Pay later'),
-          'amount' => $order_item->getAdjustedUnitPrice()->multiply('-1'),
+          'label' => $label,
+          'amount' => $order_item->getTotalPrice()->multiply('-1'),
           'source_id' => $billing_schedule->id(),
         ]));
       }

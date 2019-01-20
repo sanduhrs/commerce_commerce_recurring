@@ -357,6 +357,58 @@ interface SubscriptionInterface extends ContentEntityInterface {
   public function setRenewedTime($timestamp);
 
   /**
+   * Gets the trial start timestamp.
+   *
+   * @return int
+   *   The trial start timestamp.
+   */
+  public function getTrialStartTime();
+
+  /**
+   * Sets the trial start timestamp.
+   *
+   * @param int $timestamp
+   *   The trial start timestamp.
+   *
+   * @return $this
+   */
+  public function setTrialStartTime($timestamp);
+
+  /**
+   * Gets the trial end timestamp.
+   *
+   * @return int
+   *   The trial end timestamp.
+   */
+  public function getTrialEndTime();
+
+  /**
+   * Sets the trial end timestamp.
+   *
+   * @param int $timestamp
+   *   The trial end timestamp.
+   *
+   * @return $this
+   */
+  public function setTrialEndTime($timestamp);
+
+  /**
+   * Gets the trial start timestamp as a DrupalDateTime object.
+   *
+   * @return \Drupal\Core\Datetime\DrupalDateTime
+   *   The trial start date/time.
+   */
+  public function getTrialStartDate();
+
+  /**
+   * Gets the trial end timestamp as a DrupalDateTime object.
+   *
+   * @return \Drupal\Core\Datetime\DrupalDateTime|null
+   *   The trial end date/time, or NULL if not yet known.
+   */
+  public function getTrialEndDate();
+
+  /**
    * Gets the start timestamp.
    *
    * @return int

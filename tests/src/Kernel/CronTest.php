@@ -84,11 +84,11 @@ class CronTest extends RecurringKernelTestBase {
   }
 
   /**
-   * Test run for pending subscriptions.
+   * Test run for activating subscriptions.
    *
    * @covers ::run
    */
-  public function testPendingSubscriptionsRun() {
+  public function testSubscriptionActivateRun() {
     // Pending subscription should be activated.
     $first_subscription = Subscription::create([
       'type' => 'product_variation',
@@ -119,16 +119,52 @@ class CronTest extends RecurringKernelTestBase {
     ]);
     $second_subscription->save();
 
+    // An ending trial subscription should be activated.
+    $trial_subscription = Subscription::create([
+      'type' => 'product_variation',
+      'store_id' => $this->store->id(),
+      'billing_schedule' => $this->billingSchedule,
+      'uid' => $this->user,
+      'payment_method' => $this->paymentMethod,
+      'purchased_entity' => $this->variation,
+      'title' => $this->variation->getOrderItemTitle(),
+      'unit_price' => new Price('2', 'USD'),
+      'state' => 'trial',
+      'trial_starts' => strtotime('2017-02-24 17:00'),
+      'trial_ends' => strtotime('2017-02-24 18:00'),
+      'starts' => strtotime('2017-02-24 18:00'),
+    ]);
+    $trial_subscription->save();
+
+    // An ongoing trial subscription shouldn't be activated.
+    $trial_subscription = Subscription::create([
+      'type' => 'product_variation',
+      'store_id' => $this->store->id(),
+      'billing_schedule' => $this->billingSchedule,
+      'uid' => $this->user,
+      'payment_method' => $this->paymentMethod,
+      'purchased_entity' => $this->variation,
+      'title' => $this->variation->getOrderItemTitle(),
+      'unit_price' => new Price('2', 'USD'),
+      'state' => 'trial',
+      'trial_starts' => strtotime('2017-02-24 17:00'),
+      'trial_ends' => strtotime('2017-02-24 20:00'),
+    ]);
+    $trial_subscription->save();
+
+    $this->rewindTime(strtotime('2017-02-24 19:00'));
     // Confirm that only the first subscription was queued.
     $this->container->get('commerce_recurring.cron')->run();
 
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
     $queue = Queue::load('commerce_recurring');
     $counts = array_filter($queue->getBackend()->countJobs());
-    $this->assertEquals([Job::STATE_QUEUED => 1], $counts);
+    $this->assertEquals([Job::STATE_QUEUED => 2], $counts);
 
     $job = $queue->getBackend()->claimJob();
     $this->assertArraySubset(['subscription_id' => '1'], $job->getPayload());
+    $job = $queue->getBackend()->claimJob();
+    $this->assertArraySubset(['subscription_id' => '3'], $job->getPayload());
     $this->assertEquals('commerce_subscription_activate', $job->getType());
   }
 

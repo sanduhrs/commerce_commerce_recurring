@@ -385,6 +385,52 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
   /**
    * {@inheritdoc}
    */
+  public function getTrialStartTime() {
+    return $this->get('trial_starts')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTrialStartTime($timestamp) {
+    $this->set('trial_starts', $timestamp);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTrialEndTime() {
+    return $this->get('trial_ends')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setTrialEndTime($timestamp) {
+    $this->set('trial_ends', $timestamp);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTrialStartDate() {
+    return DrupalDateTime::createFromTimestamp($this->getTrialStartTime());
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getTrialEndDate() {
+    if ($end_time = $this->getTrialEndTime()) {
+      return DrupalDateTime::createFromTimestamp($end_time);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getStartTime() {
     return $this->get('starts')->value;
   }
@@ -442,6 +488,12 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
 
     $state = $this->getState()->value;
     $original_state = isset($this->original) ? $this->original->getState()->value : '';
+    if ($state === 'trial' && $original_state !== 'trial') {
+      if (empty($this->getTrialStartTime())) {
+        $this->setTrialStartTime(\Drupal::time()->getRequestTime());
+      }
+      $this->getType()->onSubscriptionTrialStart($this);
+    }
     if ($state === 'active' && $original_state !== 'active') {
       if (empty($this->getStartTime())) {
         $this->setStartTime(\Drupal::time()->getRequestTime());
@@ -451,7 +503,13 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
       $this->getType()->onSubscriptionExpire($this);
     }
     elseif ($state == 'canceled' && $original_state != 'canceled') {
-      $this->getType()->onSubscriptionCancel($this);
+      if ($original_state === 'trial') {
+        $this->getType()->onSubscriptionTrialCancel($this);
+
+      }
+      else {
+        $this->getType()->onSubscriptionCancel($this);
+      }
     }
   }
 
@@ -618,6 +676,36 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'type' => 'timestamp',
         'weight' => 0,
       ]);
+
+    $fields['trial_starts'] = BaseFieldDefinition::create('timestamp')
+      ->setLabel(t('Trial starts'))
+      ->setDescription(t('The time when the subscription trial starts.'))
+      ->setRequired(TRUE)
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'timestamp',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_timestamp',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('form', TRUE);
+
+    $fields['trial_ends'] = BaseFieldDefinition::create('timestamp')
+      ->setLabel(t('Trial ends'))
+      ->setDescription(t('The time when the subscription trial ends.'))
+      ->setRequired(FALSE)
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'timestamp',
+        'weight' => 0,
+      ])
+      ->setDisplayOptions('form', [
+        'type' => 'datetime_timestamp',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('form', TRUE);
 
     $fields['starts'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Starts'))

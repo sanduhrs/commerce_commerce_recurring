@@ -27,3 +27,44 @@ function commerce_recurring_update_8100(&$sandbox) {
   $update_manager = \Drupal::entityDefinitionUpdateManager();
   $update_manager->installFieldStorageDefinition('initial_order', 'commerce_subscription', 'commerce_recurring', $storage_definition);
 }
+
+/**
+ * Add the 'trial_starts' and "trial_ends" fields to subscriptions.
+ */
+function commerce_recurring_update_8101(&$sandbox) {
+  $fields = [];
+  $fields['trial_starts'] = BaseFieldDefinition::create('timestamp')
+    ->setLabel(t('Trial starts'))
+    ->setDescription(t('The time when the subscription trial starts.'))
+    ->setRequired(TRUE)
+    ->setDisplayOptions('view', [
+      'label' => 'hidden',
+      'type' => 'timestamp',
+      'weight' => 0,
+    ])
+    ->setDisplayOptions('form', [
+      'type' => 'datetime_timestamp',
+      'weight' => 0,
+    ])
+    ->setDisplayConfigurable('form', TRUE);
+
+  $fields['trial_ends'] = BaseFieldDefinition::create('timestamp')
+    ->setLabel(t('Trial ends'))
+    ->setDescription(t('The time when the subscription trial ends.'))
+    ->setRequired(FALSE)
+    ->setDisplayOptions('view', [
+      'label' => 'hidden',
+      'type' => 'timestamp',
+      'weight' => 0,
+    ])
+    ->setDisplayOptions('form', [
+      'type' => 'datetime_timestamp',
+      'weight' => 0,
+    ])
+    ->setDisplayConfigurable('form', TRUE);
+
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  foreach ($fields as $name => $storage_definition) {
+    $update_manager->installFieldStorageDefinition($name, 'commerce_subscription', 'commerce_recurring', $storage_definition);
+  }
+}

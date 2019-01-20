@@ -40,6 +40,16 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
    * initial order should cancel the previously created subscriptions.
    */
   public function testInitialLifecycle() {
+    $entity_type_manager = \Drupal::entityTypeManager();
+    // Update the billing schedule to allow "free trials".
+    $configuration = $this->billingSchedule->getPluginConfiguration();
+    $configuration['trial_interval'] = [
+      'number' => '1',
+      'unit' => 'hour'
+    ];
+    $this->billingSchedule->setPluginConfiguration($configuration);
+    $this->billingSchedule->save();
+
     $first_order_item = OrderItem::create([
       'type' => 'test',
       'title' => 'I promise not to start a subscription',
@@ -90,11 +100,51 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $this->assertEquals($this->variation->getOrderItemTitle(), $subscription->getTitle());
     $this->assertEquals('3', $subscription->getQuantity());
     $this->assertEquals($this->variation->getPrice(), $subscription->getUnitPrice());
+    $this->assertEquals('trial', $subscription->getState()->value);
+    $this->assertEquals($initial_order->id(), $subscription->getInitialOrderId());
+    $this->assertNotEmpty($subscription->getTrialStartTime());
+    $this->assertNotEmpty($subscription->getTrialEndTime());
+    $this->assertEquals(3600, $subscription->getTrialEndTime() - $subscription->getTrialStartTime());
+    $subscription->delete();
+
+    // Disallow free trials.
+    $configuration = $this->billingSchedule->getPluginConfiguration();
+    $configuration['trial_interval'] = [];
+    $this->billingSchedule->setPluginConfiguration($configuration);
+    $this->billingSchedule->save();
+
+    $entity_type_manager->getStorage('commerce_product_variation')->resetCache();
+    $initial_order = Order::create([
+      'type' => 'default',
+      'store_id' => $this->store,
+      'uid' => $this->user,
+      'order_items' => [$first_order_item, $second_order_item],
+      'state' => 'draft',
+      'payment_method' => $this->paymentMethod,
+    ]);
+    $initial_order->save();
+    $workflow = $initial_order->getState()->getWorkflow();
+    $initial_order->getState()->applyTransition($workflow->getTransition('place'));
+    $initial_order->save();
+
+    $subscriptions = Subscription::loadMultiple();
+    $this->assertCount(1, $subscriptions);
+    /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
+    $subscription = reset($subscriptions);
+
+    $this->assertEquals($this->store->id(), $subscription->getStoreId());
+    $this->assertEquals($this->billingSchedule->id(), $subscription->getBillingSchedule()->id());
+    $this->assertEquals($this->user->id(), $subscription->getCustomerId());
+    $this->assertEquals($this->paymentMethod->id(), $subscription->getPaymentMethod()->id());
+    $this->assertEquals($this->variation->id(), $subscription->getPurchasedEntityId());
+    $this->assertEquals($this->variation->getOrderItemTitle(), $subscription->getTitle());
+    $this->assertEquals('3', $subscription->getQuantity());
+    $this->assertEquals($this->variation->getPrice(), $subscription->getUnitPrice());
     $this->assertEquals('active', $subscription->getState()->value);
     $this->assertEquals($initial_order->id(), $subscription->getInitialOrderId());
 
     // Confirm that a recurring order is present.
-    $order_storage = \Drupal::entityTypeManager()->getStorage('commerce_order');
+    $order_storage = $entity_type_manager->getStorage('commerce_order');
     $result = $order_storage->getQuery()
       ->condition('type', 'recurring')
       ->pager(1)

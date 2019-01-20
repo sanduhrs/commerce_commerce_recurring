@@ -91,9 +91,9 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
     $this->queue->enqueueJob($job);
     $job = $this->queue->getBackend()->claimJob();
 
-    /** @var \Drupal\advancedqueue\ProcessorInterface $processor */
-    $processor = \Drupal::service('advancedqueue.processor');
     $result = $processor->processJob($job, $this->queue);
+    // Confirm that the job result is correct.
+    $this->assertEquals(Job::STATE_SUCCESS, $result->getState());
 
     // Confirm that the subscription was activated.
     $subscription = $this->reloadEntity($subscription);
@@ -103,6 +103,43 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
     $this->assertNotEmpty($subscription->getOrders());
     $order = $subscription->getOrders()[0];
     $this->assertEquals(new Price('2', 'USD'), $order->getTotalPrice());
+
+    // Test activating a trial subscription.
+    /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
+    $subscription = Subscription::create([
+      'type' => 'product_variation',
+      'store_id' => $this->store->id(),
+      'billing_schedule' => $this->billingSchedule,
+      'uid' => $this->user,
+      'purchased_entity' => $this->variation,
+      'title' => $this->variation->getOrderItemTitle(),
+      'unit_price' => new Price('3', 'USD'),
+      'state' => 'trial',
+      'trial_starts' => strtotime('2017-02-24 17:00'),
+      'starts' => strtotime('2017-02-24 18:00'),
+    ]);
+    $subscription->save();
+
+    $job = Job::create('commerce_subscription_activate', [
+      'subscription_id' => $subscription->id(),
+    ]);
+
+    $this->queue->enqueueJob($job);
+    $job = $this->queue->getBackend()->claimJob();
+
+    /** @var \Drupal\advancedqueue\ProcessorInterface $processor */
+    $result = $processor->processJob($job, $this->queue);
+    // Confirm that the job result is correct.
+    $this->assertEquals(Job::STATE_SUCCESS, $result->getState());
+
+    // Confirm that the subscription was activated.
+    $subscription = $this->reloadEntity($subscription);
+    $this->assertEquals('active', $subscription->getState()->value);
+
+    // Confirm that a recurring order was created.
+    $this->assertNotEmpty($subscription->getOrders());
+    $order = $subscription->getOrders()[0];
+    $this->assertEquals(new Price('3', 'USD'), $order->getTotalPrice());
   }
 
 }

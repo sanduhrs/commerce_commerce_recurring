@@ -51,6 +51,10 @@ class SubscriptionTest extends RecurringKernelTestBase {
    * @covers ::setCreatedTime
    * @covers ::getRenewedTime
    * @covers ::setRenewedTime
+   * @covers ::getTrialStartTime
+   * @covers ::setTrialStartTime
+   * @covers ::getTrialEndTime
+   * @covers ::setTrialEndTime
    * @covers ::getStartTime
    * @covers ::setStartTime
    * @covers ::getEndTime
@@ -77,6 +81,8 @@ class SubscriptionTest extends RecurringKernelTestBase {
       'unit_price' => new Price('2', 'USD'),
       'state' => 'pending',
       'created' => 1507642328,
+      'trial_starts' => 1507642328 + 10,
+      'trial_ends' => 1507642328 + 50,
       'starts' => 1507642328 + 10,
       'ends' => 1507642328 + 50,
     ]);
@@ -148,6 +154,14 @@ class SubscriptionTest extends RecurringKernelTestBase {
     $this->assertEquals(0, $subscription->getRenewedTime());
     $subscription->setRenewedTime(123456);
     $this->assertEquals(123456, $subscription->getRenewedTime());
+
+    $this->assertEquals(1507642328 + 10, $subscription->getTrialStartTime());
+    $subscription->setTrialStartTime(1508002120);
+    $this->assertEquals(1508002120, $subscription->getTrialStartTime());
+
+    $this->assertEquals(1507642328 + 50, $subscription->getTrialEndTime());
+    $subscription->setTrialEndTime(1508002920);
+    $this->assertEquals(1508002920, $subscription->getTrialEndTime());
 
     $this->assertEquals(1507642328 + 10, $subscription->getStartTime());
     $subscription->setStartTime(1508002120);

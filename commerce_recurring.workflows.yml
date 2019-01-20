@@ -37,6 +37,8 @@ subscription_default:
   group: commerce_subscription
   label: 'Default'
   states:
+    trial:
+      label: Trial
     pending:
       label: Pending
     active:
@@ -46,6 +48,14 @@ subscription_default:
     canceled:
       label: Canceled
   transitions:
+    trial_activate:
+      label: Trial activate
+      from: [trial]
+      to: active
+    trial_cancel:
+      label: Trial cancel
+      from: [trial]
+      to: canceled
     activate:
       label: Activate
       from: [pending]

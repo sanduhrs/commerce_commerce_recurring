@@ -27,6 +27,25 @@ interface BillingScheduleInterface extends ConfigurablePluginInterface, PluginFo
   public function getLabel();
 
   /**
+   * Checks whether the billing schedule allows trials.
+   *
+   * @return bool
+   *   TRUE if the billing schedule allows trials, FALSE otherwise.
+   */
+  public function allowTrials();
+
+  /**
+   * Generates the trial period.
+   *
+   * @param \Drupal\Core\Datetime\DrupalDateTime $start_date
+   *   The trial start date/time.
+   *
+   * @return \Drupal\commerce_recurring\BillingPeriod
+   *   The trial period.
+   */
+  public function generateTrialPeriod(DrupalDateTime $start_date);
+
+  /**
    * Generates the first billing period.
    *
    * @param \Drupal\Core\Datetime\DrupalDateTime $start_date
