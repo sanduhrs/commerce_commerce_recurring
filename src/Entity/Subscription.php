@@ -680,7 +680,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
     $fields['trial_starts'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Trial starts'))
       ->setDescription(t('The time when the subscription trial starts.'))
-      ->setRequired(TRUE)
+      ->setRequired(FALSE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'timestamp',

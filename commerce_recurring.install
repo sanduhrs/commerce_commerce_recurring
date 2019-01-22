@@ -36,7 +36,7 @@ function commerce_recurring_update_8101(&$sandbox) {
   $fields['trial_starts'] = BaseFieldDefinition::create('timestamp')
     ->setLabel(t('Trial starts'))
     ->setDescription(t('The time when the subscription trial starts.'))
-    ->setRequired(TRUE)
+    ->setRequired(FALSE)
     ->setDisplayOptions('view', [
       'label' => 'hidden',
       'type' => 'timestamp',
