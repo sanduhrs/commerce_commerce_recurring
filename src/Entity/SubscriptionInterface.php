@@ -264,6 +264,14 @@ interface SubscriptionInterface extends ContentEntityInterface {
   public function getInitialOrderId();
 
   /**
+   * Gets the current draft recurring order.
+   *
+   * @return \Drupal\commerce_order\Entity\OrderInterface|null
+   *   The current draft recurring order, or NULL if none found.
+   */
+  public function getCurrentOrder();
+
+  /**
    * Gets the recurring order IDs.
    *
    * @return int[]
@@ -459,5 +467,13 @@ interface SubscriptionInterface extends ContentEntityInterface {
    *   The end date/time, or NULL if not yet known.
    */
   public function getEndDate();
+
+  /**
+   * Gets the billing period value object for the current order.
+   *
+   * @return \Drupal\commerce_recurring\BillingPeriod|null
+   *   The billing period object, or null if not set.
+   */
+  public function getCurrentBillingPeriod();
 
 }

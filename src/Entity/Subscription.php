@@ -283,6 +283,30 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
   /**
    * {@inheritdoc}
    */
+  public function getCurrentOrder() {
+    $order_ids = $this->getOrderIds();
+    if (empty($order_ids)) {
+      return NULL;
+    }
+    $order_storage = $this->entityTypeManager()->getStorage('commerce_order');
+    $order_ids = $order_storage->getQuery()
+      ->condition('type', 'recurring')
+      ->condition('order_id', $order_ids, 'IN')
+      ->condition('state', 'draft')
+      ->sort('order_id', 'DESC')
+      ->accessCheck(FALSE)
+      ->range(0, 1)
+      ->execute();
+
+    if (!$order_ids) {
+      return NULL;
+    }
+    return $order_storage->load(key($order_ids));
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getOrderIds() {
     $order_ids = [];
     foreach ($this->get('orders') as $field_item) {
@@ -472,6 +496,18 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
     if ($end_time = $this->getEndTime()) {
       return DrupalDateTime::createFromTimestamp($end_time);
     }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCurrentBillingPeriod() {
+    if ($current_order = $this->getCurrentOrder()) {
+      if (!$current_order->get('billing_period')->isEmpty()) {
+        return $current_order->get('billing_period')->first()->toBillingPeriod();
+      }
+    }
+    return NULL;
   }
 
   /**
