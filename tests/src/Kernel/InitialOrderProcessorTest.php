@@ -41,6 +41,10 @@ class InitialOrderProcessorTest extends RecurringKernelTestBase {
 
     $this->assertEquals($this->variation->getPrice(), $order->getSubtotalPrice());
     $this->assertTrue($order->getTotalPrice()->isZero());
+    $adjustments = $order_item->getAdjustments();
+    $adjustment = reset($adjustments);
+    $this->assertEquals('subscription', $adjustment->getType());
+    $this->assertEquals(t('Pay later'), $adjustment->getLabel());
   }
 
   /**
@@ -119,6 +123,10 @@ class InitialOrderProcessorTest extends RecurringKernelTestBase {
 
       $this->assertEquals($this->variation->getPrice(), $order->getSubtotalPrice());
       $this->assertTrue($order->getTotalPrice()->isZero());
+      $adjustments = $order_item->getAdjustments();
+      $adjustment = reset($adjustments);
+      $this->assertEquals('subscription', $adjustment->getType());
+      $this->assertEquals(t('Free trial'), $adjustment->getLabel());
     }
   }
 

@@ -88,7 +88,7 @@ class InitialOrderProcessor implements OrderProcessorInterface {
         }
       }
       else {
-        $label = $allow_trials ? t('Pay later') : t('Free trial');
+        $label = $allow_trials ? t('Free trial') : t('Pay later');
         // A postpaid purchased entity is free in the initial order.
         $order_item->addAdjustment(new Adjustment([
           'type' => 'subscription',
