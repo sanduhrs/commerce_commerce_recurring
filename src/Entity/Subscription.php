@@ -572,6 +572,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
     $fields['billing_schedule'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Billing schedule'))
       ->setDescription(t('The billing schedule.'))
+      ->setRequired(TRUE)
       ->setSetting('target_type', 'commerce_billing_schedule')
       ->setSetting('handler', 'default')
       ->setDisplayConfigurable('view', TRUE)

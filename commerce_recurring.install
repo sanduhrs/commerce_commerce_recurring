@@ -68,3 +68,13 @@ function commerce_recurring_update_8101(&$sandbox) {
     $update_manager->installFieldStorageDefinition($name, 'commerce_subscription', 'commerce_recurring', $storage_definition);
   }
 }
+
+/**
+ * Make the billing_schedule field required on subscriptions.
+ */
+function commerce_recurring_update_8102() {
+  $entity_definition_update = \Drupal::entityDefinitionUpdateManager();
+  $field_definition = $entity_definition_update->getFieldStorageDefinition('billing_schedule', 'commerce_subscription');
+  $field_definition->setRequired(TRUE);
+  $entity_definition_update->updateFieldStorageDefinition($field_definition);
+}
