@@ -135,7 +135,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     $subscriptions = $this->collectSubscriptions($order);
     /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
     $subscription = reset($subscriptions);
-    if ($subscription->getState()->value != 'active') {
+    if (!$subscription || $subscription->getState()->value != 'active') {
       // The subscription has ended.
       return NULL;
     }
