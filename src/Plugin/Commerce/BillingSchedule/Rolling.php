@@ -35,7 +35,7 @@ class Rolling extends IntervalBase {
     // Retain the original billing day when possible.
     // Jan 31st -> Feb 28th -> March 31st (not March 28th).
     $billing_day = $start_date->format('d');
-    if ($next_end_date->format('d') != $billing_day) {
+    if ($this->getInterval()->getUnit() == 'month' && $next_end_date->format('d') != $billing_day) {
       if ($billing_day <= $next_end_date->format('t')) {
         $next_end_date->setDate($next_end_date->format('Y'), $next_end_date->format('m'), $billing_day);
       }

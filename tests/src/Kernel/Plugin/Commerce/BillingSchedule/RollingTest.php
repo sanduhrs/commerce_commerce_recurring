@@ -45,6 +45,20 @@ class RollingTest extends KernelTestBase {
     $plugin = new Rolling([
       'interval' => [
         'number' => '1',
+        'unit' => 'week',
+      ],
+    ], '', []);
+    $start_date = new DrupalDateTime('2017-03-16 10:22:30');
+    $billing_period = $plugin->generateFirstBillingPeriod($start_date);
+    $this->assertEquals(new DrupalDateTime('2017-03-16 10:22:30'), $billing_period->getStartDate());
+    $this->assertEquals(new DrupalDateTime('2017-03-23 10:22:30'), $billing_period->getEndDate());
+    $next_billing_period = $plugin->generateNextBillingPeriod($start_date, $billing_period);
+    $this->assertEquals(new DrupalDateTime('2017-03-23 10:22:30'), $next_billing_period->getStartDate());
+    $this->assertEquals(new DrupalDateTime('2017-03-30 10:22:30'), $next_billing_period->getEndDate());
+
+    $plugin = new Rolling([
+      'interval' => [
+        'number' => '1',
         'unit' => 'month',
       ],
     ], '', []);
