@@ -72,9 +72,6 @@ class OrderSubscriber implements EventSubscriberInterface {
       return;
     }
     $payment_method = $order->get('payment_method')->entity;
-    if (empty($payment_method)) {
-      return;
-    }
     $start_date = DrupalDateTime::createFromTimestamp($this->time->getRequestTime());
 
     foreach ($order->getItems() as $order_item) {
@@ -89,11 +86,23 @@ class OrderSubscriber implements EventSubscriberInterface {
       }
       /** @var \Drupal\commerce_recurring\Entity\BillingScheduleInterface $billing_schedule */
       $billing_schedule = $billing_schedule_item->entity;
+      // If the trial is not allowed and no payment method was collected, we
+      // cannot proceed to the subscription creation.
+      if (!$billing_schedule->getPlugin()->allowTrials() && empty($payment_method)) {
+        continue;
+      }
+
       $subscription = $subscription_storage->createFromOrderItem($order_item, [
         'type' => $subscription_type_item->target_plugin_id,
         'billing_schedule' => $billing_schedule,
-        'payment_method' => $payment_method,
       ]);
+
+      // Set the payment method if known, it's not required to start a free
+      // trial if it wasn't collected.
+      if (!empty($payment_method)) {
+        $subscription->setPaymentMethod($payment_method);
+      }
+
       if ($billing_schedule->getPlugin()->allowTrials()) {
         $trial_period = $billing_schedule->getPlugin()->generateTrialPeriod($start_date);
         $trial_start = $trial_period->getStartDate()->getTimestamp();

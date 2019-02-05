@@ -41,14 +41,6 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
    */
   public function testInitialLifecycle() {
     $entity_type_manager = \Drupal::entityTypeManager();
-    // Update the billing schedule to allow "free trials".
-    $configuration = $this->billingSchedule->getPluginConfiguration();
-    $configuration['trial_interval'] = [
-      'number' => '1',
-      'unit' => 'hour'
-    ];
-    $this->billingSchedule->setPluginConfiguration($configuration);
-    $this->billingSchedule->save();
 
     $first_order_item = OrderItem::create([
       'type' => 'test',
@@ -76,13 +68,35 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
       'uid' => $this->user,
       'order_items' => [$first_order_item, $second_order_item],
       'state' => 'draft',
-      'payment_method' => $this->paymentMethod,
     ]);
     $initial_order->save();
 
     $subscriptions = Subscription::loadMultiple();
     $this->assertCount(0, $subscriptions);
 
+    // Confirm that placing an order with no payment method and a billing
+    // schedule that doesn't allow trial doesn't create the subscription.
+    $workflow = $initial_order->getState()->getWorkflow();
+    $initial_order->getState()->applyTransition($workflow->getTransition('place'));
+    $initial_order->save();
+
+    $subscriptions = Subscription::loadMultiple();
+    $this->assertCount(0, $subscriptions);
+
+    // Update the billing schedule to allow "free trials".
+    $configuration = $this->billingSchedule->getPluginConfiguration();
+    $configuration['trial_interval'] = [
+      'number' => '1',
+      'unit' => 'hour'
+    ];
+    $this->billingSchedule->setPluginConfiguration($configuration);
+    $this->billingSchedule->save();
+    $entity_type_manager->getStorage('commerce_product_variation')->resetCache();
+
+    $initial_order->set('state', 'draft');
+    $initial_order->save();
+    // Confirm that placing an order without a payment method when the billing
+    // schedule allows free trials creates a subscription.
     $workflow = $initial_order->getState()->getWorkflow();
     $initial_order->getState()->applyTransition($workflow->getTransition('place'));
     $initial_order->save();
@@ -95,7 +109,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $this->assertEquals($this->store->id(), $subscription->getStoreId());
     $this->assertEquals($this->billingSchedule->id(), $subscription->getBillingSchedule()->id());
     $this->assertEquals($this->user->id(), $subscription->getCustomerId());
-    $this->assertEquals($this->paymentMethod->id(), $subscription->getPaymentMethod()->id());
+    $this->assertNull($subscription->getPaymentMethod());
     $this->assertEquals($this->variation->id(), $subscription->getPurchasedEntityId());
     $this->assertEquals($this->variation->getOrderItemTitle(), $subscription->getTitle());
     $this->assertEquals('3', $subscription->getQuantity());
@@ -114,14 +128,8 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $this->billingSchedule->save();
 
     $entity_type_manager->getStorage('commerce_product_variation')->resetCache();
-    $initial_order = Order::create([
-      'type' => 'default',
-      'store_id' => $this->store,
-      'uid' => $this->user,
-      'order_items' => [$first_order_item, $second_order_item],
-      'state' => 'draft',
-      'payment_method' => $this->paymentMethod,
-    ]);
+    $initial_order->set('state', 'draft');
+    $initial_order->set('payment_method', $this->paymentMethod);
     $initial_order->save();
     $workflow = $initial_order->getState()->getWorkflow();
     $initial_order->getState()->applyTransition($workflow->getTransition('place'));
