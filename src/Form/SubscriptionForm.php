@@ -12,7 +12,7 @@ class SubscriptionForm extends ContentEntityForm {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $this->entity->save();
-    drupal_set_message($this->t('A subscription been successfully saved.'));
+    $this->messenger()->addMessage($this->t('A subscription been successfully saved.'));
     $form_state->setRedirect('entity.commerce_subscription.collection');
   }
 
