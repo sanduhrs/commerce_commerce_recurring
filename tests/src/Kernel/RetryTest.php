@@ -5,12 +5,20 @@ namespace Drupal\Tests\commerce_recurring\Kernel;
 use Drupal\advancedqueue\Job;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\Entity\Subscription;
+use Drupal\commerce_recurring_test\Entity\ExceptionPaymentMethod;
 
 /**
  * @coversDefaultClass \Drupal\commerce_recurring\Plugin\AdvancedQueue\JobType\RecurringOrderClose
  * @group commerce_recurring
  */
 class RetryTest extends RecurringKernelTestBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  public static $modules = [
+    'commerce_recurring_test',
+  ];
 
   /**
    * The recurring order manager.
@@ -127,6 +135,68 @@ class RetryTest extends RecurringKernelTestBase {
     // Confirm that the job was not requeued.
     $this->assertEquals(3, $job->getNumRetries());
     $this->assertEquals(Job::STATE_SUCCESS, $job->getState());
+    // Confirm that the subscription was canceled.
+    $subscription = $this->reloadEntity($subscription);
+    $this->assertEquals('canceled', $subscription->getState()->value);
+  }
+
+  /**
+   * @covers ::process
+   * @covers ::handleDecline
+   * @covers ::updateSubscriptions
+   */
+  public function testFailure() {
+    $payment_method = ExceptionPaymentMethod::create([
+      'type' => 'credit_card',
+      'payment_gateway' => 'example',
+    ]);
+    $payment_method->save();
+
+    $subscription = Subscription::create([
+      'type' => 'product_variation',
+      'store_id' => $this->store->id(),
+      'billing_schedule' => $this->billingSchedule,
+      'uid' => $this->user,
+      'purchased_entity' => $this->variation,
+      'title' => $this->variation->getOrderItemTitle(),
+      'unit_price' => new Price('2', 'USD'),
+      'state' => 'active',
+      'starts' => strtotime('2017-02-24 17:00'),
+      'payment_method' => $payment_method,
+    ]);
+    $subscription->save();
+    $order = $this->recurringOrderManager->ensureOrder($subscription);
+
+    // Rewind time to the end of the first subscription.
+    $this->rewindTime(strtotime('2017-02-24 19:00'));
+    $job = Job::create('commerce_recurring_order_close', [
+      'order_id' => $order->id(),
+    ]);
+    $this->queue->enqueueJob($job);
+
+    // Tell the payment method entity class to throw an exception.
+    // This will be caught by RecurringOrderClose as with a DeclineException,
+    // but re-thrown, and then caught by processJob().
+    \Drupal::state()->set('commerce_recurring_test.payment_method_throw', TRUE);
+
+    $job = $this->queue->getBackend()->claimJob();
+    /** @var \Drupal\advancedqueue\ProcessorInterface $processor */
+    $processor = \Drupal::service('advancedqueue.processor');
+    $result = $processor->processJob($job, $this->queue);
+
+    // Confirm that the order was marked as failed.
+    $order = $this->reloadEntity($order);
+    $this->assertEquals('failed', $order->getState()->value);
+
+    // Confirm that the job result is correct.
+    $this->assertEquals(Job::STATE_FAILURE, $job->getState());
+    $this->assertEquals('This payment is failing dramatically!', $result->getMessage());
+
+    // Confirm that the job was not requeued.
+    $this->assertEquals(0, $job->getNumRetries());
+    $counts = array_filter($this->queue->getBackend()->countJobs());
+    $this->assertEquals([Job::STATE_FAILURE => 1], $counts);
+
     // Confirm that the subscription was canceled.
     $subscription = $this->reloadEntity($subscription);
     $this->assertEquals('canceled', $subscription->getState()->value);

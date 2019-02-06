@@ -106,6 +106,15 @@ class RecurringOrderClose extends JobTypeBase implements ContainerFactoryPluginI
       // might have changed their payment method since the last attempt.
       return $this->handleDecline($order, $exception, $job->getNumRetries());
     }
+    catch (\Exception $exception) {
+      // If something more general goes wrong, we assume it's not possible
+      // or desirable to retry.
+      $this->handleFailedOrder($order);
+
+      // Rethrow the exception so that the queue processor can log the job's
+      // failure with the exception's message.
+      throw $exception;
+    }
 
     return JobResult::success();
   }
@@ -136,11 +145,7 @@ class RecurringOrderClose extends JobTypeBase implements ContainerFactoryPluginI
       $retry_days = 0;
       $result = JobResult::success('Dunning complete, recurring order not paid.');
 
-      $transition = $order->getState()->getWorkflow()->getTransition('mark_failed');
-      $order->getState()->applyTransition($transition);
-      if ($billing_schedule->getUnpaidSubscriptionState() != 'active') {
-        $this->updateSubscriptions($order, $billing_schedule->getUnpaidSubscriptionState());
-      }
+      $this->handleFailedOrder($order, FALSE);
     }
     // Subscribers can choose to send a dunning email.
     $event = new PaymentDeclinedEvent($order, $retry_days, $num_retries, $max_retries);
@@ -148,6 +153,27 @@ class RecurringOrderClose extends JobTypeBase implements ContainerFactoryPluginI
     $order->save();
 
     return $result;
+  }
+
+  /**
+   * Handles an order whose payment has definitively failed.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $order
+   *   The order.
+   * @param bool $save_order
+   *   Whether the order should be saved after the operation.
+   */
+  protected function handleFailedOrder(OrderInterface $order, $save_order = TRUE) {
+    $transition = $order->getState()->getWorkflow()->getTransition('mark_failed');
+    $order->getState()->applyTransition($transition);
+
+    $billing_schedule = $order->get('billing_schedule')->entity;
+    if ($billing_schedule->getUnpaidSubscriptionState() != 'active') {
+      $this->updateSubscriptions($order, $billing_schedule->getUnpaidSubscriptionState());
+    }
+    if ($save_order) {
+      $order->save();
+    }
   }
 
   /**
