@@ -37,10 +37,10 @@ subscription_default:
   group: commerce_subscription
   label: 'Default'
   states:
-    trial:
-      label: Trial
     pending:
       label: Pending
+    trial:
+      label: Trial
     active:
       label: Active
     expired:

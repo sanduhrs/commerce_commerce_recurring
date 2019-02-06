@@ -95,3 +95,14 @@ function commerce_recurring_form_commerce_product_variation_type_form_alter(arra
 function commerce_recurring_order_item_types() {
   return ['recurring_standalone', 'recurring_product_variation'];
 }
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_recurring_theme($existing, $type, $theme, $path) {
+  return [
+    'commerce_subscription_form' => [
+      'render element' => 'form',
+    ],
+  ];
+}

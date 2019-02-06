@@ -577,7 +577,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
       ->setSetting('handler', 'default')
       ->setDisplayConfigurable('view', TRUE)
       ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
+        'type' => 'options_select',
         'weight' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE);
@@ -632,7 +632,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
       ])
       ->setDisplayOptions('form', [
         'type' => 'string_textfield',
-        'weight' => -1,
+        'weight' => -10,
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
@@ -681,11 +681,6 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
       ->setSetting('target_type', 'commerce_order')
       ->setSetting('handler', 'default')
       ->setSetting('display_description', TRUE)
-      ->setDisplayOptions('form', [
-        'type' => 'entity_reference_autocomplete',
-        'weight' => 0,
-      ])
-      ->setDisplayConfigurable('form', TRUE)
       ->setDisplayConfigurable('view', TRUE);
 
     $fields['orders'] = BaseFieldDefinition::create('entity_reference')
@@ -739,7 +734,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'weight' => 0,
       ])
       ->setDisplayOptions('form', [
-        'type' => 'datetime_timestamp',
+        'type' => 'commerce_recurring_end_timestamp',
         'weight' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE);
@@ -769,7 +764,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'weight' => 0,
       ])
       ->setDisplayOptions('form', [
-        'type' => 'datetime_timestamp',
+        'type' => 'commerce_recurring_end_timestamp',
         'weight' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE);
@@ -791,7 +786,7 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
     // The field definition is recreated instead of cloned to get around
     // core issue #2346329 (fixed in 8.5.x but not 8.4.x).
     $fields['purchased_entity'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel($original->getLabel())
+      ->setLabel(t('Product variation'))
       ->setDescription($original->getDescription())
       ->setConstraints($original->getConstraints())
       ->setDisplayOptions('view', $original->getDisplayOptions('view'))
