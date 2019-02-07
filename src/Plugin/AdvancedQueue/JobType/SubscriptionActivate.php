@@ -82,8 +82,7 @@ class SubscriptionActivate extends JobTypeBase implements ContainerFactoryPlugin
     if (!in_array($subscription->getState()->value, ['pending', 'trial'], TRUE)) {
       return JobResult::failure(sprintf('Unsupported subscription status. Supported statuses: ("trial", "pending"), Actual: "%s").', $subscription->getState()->value));
     }
-    $transition = $subscription->getState()->value === 'trial' ? 'trial_activate' : 'activate';
-    $transition = $subscription->getState()->getWorkflow()->getTransition($transition);
+    $transition = $subscription->getState()->getWorkflow()->getTransition('activate');
     $subscription->getState()->applyTransition($transition);
     $subscription->save();
     $this->recurringOrderManager->ensureOrder($subscription);
