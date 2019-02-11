@@ -87,6 +87,24 @@ function commerce_recurring_form_commerce_product_variation_type_form_alter(arra
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter() for 'commerce_order_add_form'.
+ */
+function commerce_recurring_form_commerce_order_add_form_alter(array &$form, FormStateInterface $form_state) {
+  $form['type']['#after_build'] = ['commerce_recurring_order_type_after_build'];
+}
+
+/**
+ * After build callback for the order type radio buttons in the order add form.
+ */
+function commerce_recurring_order_type_after_build(array $element, FormStateInterface $form_state) {
+  // Hide the recurring order type from the radio buttons, it should never
+  // be selected by the merchant when creating an order from the admin.
+  unset($element['value']['#options']['recurring']);
+  $element['value']['recurring']['#access'] = FALSE;
+  return $element;
+}
+
+/**
  * Gets the recurring order item types.
  *
  * @return string[]
