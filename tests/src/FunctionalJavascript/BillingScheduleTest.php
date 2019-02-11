@@ -4,14 +4,17 @@ namespace Drupal\Tests\commerce_recurring\FunctionalJavascript;
 
 use Drupal\commerce_recurring\Entity\BillingSchedule;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
-use Drupal\Tests\commerce\FunctionalJavascript\CommerceWebDriverTestBase;
+use Drupal\Tests\commerce\Functional\CommerceBrowserTestBase;
+use Drupal\Tests\commerce\FunctionalJavascript\JavascriptTestTrait;
 
 /**
  * Tests the billing schedule UI.
  *
  * @group commerce_recurring
  */
-class BillingScheduleTest extends CommerceWebDriverTestBase {
+class BillingScheduleTest extends CommerceBrowserTestBase {
+
+  use JavascriptTestTrait;
 
   /**
    * {@inheritdoc}
@@ -35,14 +38,13 @@ class BillingScheduleTest extends CommerceWebDriverTestBase {
    */
   public function testBillingScheduleCreation() {
     $this->drupalGet('admin/commerce/config/billing-schedules');
-    $page = $this->getSession()->getPage();
-    $page->clickLink('Add billing schedule');
+    $this->getSession()->getPage()->clickLink('Add billing schedule');
     $this->assertSession()->addressEquals('admin/commerce/config/billing-schedules/add');
-    $page->fillField('label', 'Test');
-    $this->getSession()->wait(1000, 'jQuery("#edit-label-machine-name-suffix .machine-name-value").html() == "test"');
+
     $values = [
-      'billingType' => BillingScheduleInterface::BILLING_TYPE_POSTPAID,
+      'label' => 'Test',
       'displayLabel' => 'Awesome test',
+      'billingType' => BillingScheduleInterface::BILLING_TYPE_POSTPAID,
       'dunning[retry][0]' => '1',
       'dunning[retry][1]' => '2',
       'dunning[retry][2]' => '3',
@@ -55,6 +57,9 @@ class BillingScheduleTest extends CommerceWebDriverTestBase {
       'configuration[fixed][interval][unit]' => 'month',
       'configuration[fixed][start_day]' => '4',
       'prorater' => 'proportional',
+      // Setting the 'id' can fail if focus switches to another field.
+      // This is a bug in the machine name JS that can be reproduced manually.
+      'id' => 'test',
     ];
     $this->submitForm($values, 'Save');
     $this->assertSession()->addressEquals('admin/commerce/config/billing-schedules');
