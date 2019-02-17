@@ -6,11 +6,8 @@
   "license": "GPL-2.0+",
   "require": {
     "drupal/advancedqueue": "^1.0",
-    "drupal/commerce": "2.x-dev",
+    "drupal/commerce": "^2.12",
     "drupal/state_machine": "^1.0"
-  },
-  "require-dev": {
-    "drupal/commerce": "2.x-dev"
   },
   "support": {
     "issues": "https://www.drupal.org/project/issues/commerce_recurring",
