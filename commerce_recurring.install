@@ -83,6 +83,8 @@ function commerce_recurring_update_8102() {
  * Add the 'scheduled_changes' field to 'commerce_subscription' entities.
  */
 function commerce_recurring_update_8103() {
+  \Drupal::service('plugin.manager.field.field_type')->clearCachedDefinitions();
+
   $storage_definition = BaseFieldDefinition::create('commerce_scheduled_change')
     ->setLabel(t('Scheduled changes'))
     ->setRequired(FALSE)
