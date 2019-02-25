@@ -476,4 +476,83 @@ interface SubscriptionInterface extends ContentEntityInterface {
    */
   public function getCurrentBillingPeriod();
 
+  /**
+   * Gets whether the subscription has scheduled changes.
+   *
+   * @return bool
+   *   TRUE if the subscription has scheduled changes, FALSE otherwise.
+   */
+  public function hasScheduledChanges();
+
+  /**
+   * Gets the scheduled changes.
+   *
+   * @return \Drupal\commerce_recurring\ScheduledChange[]
+   *   The scheduled changes.
+   */
+  public function getScheduledChanges();
+
+  /**
+   * Sets the scheduled changes.
+   *
+   * @param \Drupal\commerce_recurring\ScheduledChange[] $scheduled_changes
+   *   The scheduled changes.
+   *
+   * @return $this
+   */
+  public function setScheduledChanges(array $scheduled_changes);
+
+  /**
+   * Adds a scheduled change for the given field.
+   *
+   * @param string $field_name
+   *   The field_name.
+   * @param mixed $value
+   *   The value.
+   *
+   * @return $this
+   */
+  public function addScheduledChange($field_name, $value);
+
+  /**
+   * Removes the scheduled changes.
+   *
+   * @param string $field_name
+   *   (optional) The field name. If provided, only scheduled changes for that
+   *   field will be removed. Otherwise, all scheduled changes will be removed.
+   *
+   * @return $this
+   */
+  public function removeScheduledChanges($field_name = NULL);
+
+  /**
+   * Determines if a scheduled change for the given field exists.
+   *
+   * @param string $field_name
+   *   The field_name.
+   * @param mixed $value
+   *   (optional) The value.
+   *
+   * @return bool
+   *   TRUE if the given change is scheduled, FALSE otherwise.
+   */
+  public function hasScheduledChange($field_name, $value = NULL);
+
+  /**
+   * Apply the scheduled changes.
+   *
+   * @return $this
+   */
+  public function applyScheduledChanges();
+
+  /**
+   * Cancel the subscription.
+   *
+   * @param bool $schedule
+   *   Whether to schedule the cancellation.
+   *
+   * @return $this
+   */
+  public function cancel($schedule = TRUE);
+
 }

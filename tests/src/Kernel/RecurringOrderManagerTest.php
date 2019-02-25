@@ -7,6 +7,7 @@ use Drupal\commerce_payment\Exception\HardDeclineException;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\Subscription;
+use Drupal\commerce_recurring\ScheduledChange;
 use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
@@ -112,7 +113,8 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     // Confirm that the order is canceled on refresh if no charges remain.
     $this->billingSchedule->setBillingType(BillingScheduleInterface::BILLING_TYPE_PREPAID);
     $this->billingSchedule->save();
-    $this->subscription->setState('canceled');
+    $this->subscription = $this->reloadEntity($this->subscription);
+    $this->subscription->cancel();
     $this->subscription->save();
     $this->reloadEntity($order_item);
     $this->recurringOrderManager->refreshOrder($order);
@@ -187,8 +189,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->assertEquals($this->subscription->id(), $order_item->get('subscription')->target_id);
 
     // Confirm that no renewal occurs for canceled subscriptions.
-    $this->subscription->setState('canceled');
-    $this->subscription->save();
+    $this->subscription->cancel(FALSE)->save();
     $result = $this->recurringOrderManager->renewOrder($next_order);
     $this->assertNull($result);
   }

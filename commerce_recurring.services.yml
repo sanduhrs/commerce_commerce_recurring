@@ -24,7 +24,7 @@ services:
 
   commerce_recurring.cron:
     class: \Drupal\commerce_recurring\Cron
-    arguments: ['@entity_type.manager', '@datetime.time']
+    arguments: ['@entity_type.manager', '@commerce_recurring.order_manager', '@datetime.time']
 
   commerce_recurring.order_manager:
     class: \Drupal\commerce_recurring\RecurringOrderManager

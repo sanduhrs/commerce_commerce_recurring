@@ -6,6 +6,7 @@ use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_payment\Entity\PaymentMethodInterface;
 use Drupal\commerce_price\Price;
+use Drupal\commerce_recurring\ScheduledChange;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityMalformedException;
@@ -513,6 +514,102 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
   /**
    * {@inheritdoc}
    */
+  public function hasScheduledChanges() {
+    return !$this->get('scheduled_changes')->isEmpty();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getScheduledChanges() {
+    return $this->get('scheduled_changes')->getScheduledChanges();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setScheduledChanges(array $scheduled_changes) {
+    $this->set('scheduled_changes', $scheduled_changes);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function addScheduledChange($field_name, $value) {
+    if (!$this->hasField($field_name)) {
+      throw new \InvalidArgumentException(sprintf('Invalid field_name "%s" specified for the given scheduled change.', $field_name));
+    }
+    if ($field_name === 'purchased_entity') {
+      throw new \InvalidArgumentException('Scheduling a plan change is not yet supported.');
+    }
+    // Other scheduled changes are made irrelevant by a state change.
+    if ($field_name === 'state') {
+      $this->removeScheduledChanges();
+    }
+    else {
+      // There can only be a single scheduled change for a given field.
+      $this->removeScheduledChanges($field_name);
+    }
+    $scheduled_change = new ScheduledChange($field_name, $value, \Drupal::time()->getRequestTime());
+    $this->get('scheduled_changes')->appendItem($scheduled_change);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function removeScheduledChanges($field_name = NULL) {
+    foreach ($this->getScheduledChanges() as $scheduled_change) {
+      if (!$field_name || $scheduled_change->getFieldName() === $field_name) {
+        $this->get('scheduled_changes')->removeScheduledChange($scheduled_change);
+      }
+    }
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasScheduledChange($field_name, $value = NULL) {
+    foreach ($this->getScheduledChanges() as $change) {
+      if ($change->getFieldName() != $field_name) {
+        continue;
+      }
+      if (is_null($value) || $change->getValue() == $value) {
+        return TRUE;
+      }
+    }
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function applyScheduledChanges() {
+    foreach ($this->getScheduledChanges() as $scheduled_change) {
+      $this->set($scheduled_change->getFieldName(), $scheduled_change->getValue());
+    }
+    $this->removeScheduledChanges();
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function cancel($schedule = TRUE) {
+    if ($schedule) {
+      $this->addScheduledChange('state', 'canceled');
+    }
+    else {
+      $this->setState('canceled');
+    }
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function preSave(EntityStorageInterface $storage) {
     parent::preSave($storage);
 
@@ -524,15 +621,23 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
 
     $state = $this->getState()->value;
     $original_state = isset($this->original) ? $this->original->getState()->value : '';
+
+    if ($original_state !== $state) {
+      $this->removeScheduledChanges();
+    }
+
     if ($state === 'trial' && $original_state !== 'trial') {
       if (empty($this->getTrialStartTime())) {
         $this->setTrialStartTime(\Drupal::time()->getRequestTime());
       }
       $this->getType()->onSubscriptionTrialStart($this);
     }
-    if ($state === 'active' && $original_state !== 'active') {
+    elseif ($state === 'active' && $original_state !== 'active') {
       if (empty($this->getStartTime())) {
         $this->setStartTime(\Drupal::time()->getRequestTime());
+      }
+      if (!empty($this->getEndTime())) {
+        $this->setEndTime(NULL);
       }
     }
     elseif ($state == 'expired' && $original_state != 'expired') {
@@ -541,11 +646,30 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
     elseif ($state == 'canceled' && $original_state != 'canceled') {
       if ($original_state === 'trial') {
         $this->getType()->onSubscriptionTrialCancel($this);
-
       }
       else {
         $this->getType()->onSubscriptionCancel($this);
       }
+      $this->setEndTime(\Drupal::time()->getRequestTime());
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+    $current_order = $this->getCurrentOrder();
+
+    if (!isset($this->original) || empty($current_order)) {
+      return;
+    }
+    $state = $this->getState()->getId();
+    $original_state = $this->original->getState()->getId();
+
+    if ($state != $original_state && in_array($state, ['canceled'])) {
+      $current_order->setRefreshState(OrderInterface::REFRESH_ON_SAVE);
+      $current_order->save();
     }
   }
 
@@ -768,6 +892,18 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
         'weight' => 0,
       ])
       ->setDisplayConfigurable('form', TRUE);
+
+    $fields['scheduled_changes'] = BaseFieldDefinition::create('commerce_scheduled_change')
+      ->setLabel(t('Scheduled changes'))
+      ->setRequired(FALSE)
+      ->setCardinality(BaseFieldDefinition::CARDINALITY_UNLIMITED)
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'commerce_scheduled_change_default',
+        'weight' => 0,
+      ])
+      ->setDisplayConfigurable('form', FALSE)
+      ->setDisplayConfigurable('view', TRUE);
 
     return $fields;
   }

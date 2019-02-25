@@ -58,8 +58,7 @@ class OrderRefreshTest extends RecurringKernelTestBase {
     // Confirm that the order is canceled on refresh if no charges remain.
     $this->billingSchedule->setBillingType(BillingScheduleInterface::BILLING_TYPE_PREPAID);
     $this->billingSchedule->save();
-    $subscription->setState('canceled');
-    $subscription->save();
+    $subscription->cancel()->save();
     $order->save();
 
     $this->assertEquals('canceled', $order->getState()->value);

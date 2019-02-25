@@ -9,7 +9,7 @@ use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\Core\TypedData\DataDefinition;
 
 /**
- * Plugin implementation of the 'commerce_price' field type.
+ * Plugin implementation of the 'commerce_billing_period' field type.
  *
  * @FieldType(
  *   id = "commerce_billing_period",

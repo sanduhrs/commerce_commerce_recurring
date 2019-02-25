@@ -5,6 +5,7 @@ namespace Drupal\Tests\commerce_recurring\Kernel;
 use Drupal\advancedqueue\Entity\Queue;
 use Drupal\advancedqueue\Job;
 use Drupal\commerce_price\Price;
+use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\Subscription;
 
 /**
@@ -48,7 +49,9 @@ class CronTest extends RecurringKernelTestBase {
       'starts' => strtotime('2017-02-24 17:00'),
     ]);
     $first_subscription->save();
-    $this->recurringOrderManager->ensureOrder($first_subscription);
+    $first_order = $this->recurringOrderManager->ensureOrder($first_subscription);
+    // Schedule a cancellation.
+    $first_subscription->cancel()->save();
 
     $second_subscription = Subscription::create([
       'type' => 'product_variation',
@@ -73,13 +76,45 @@ class CronTest extends RecurringKernelTestBase {
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
     $queue = Queue::load('commerce_recurring');
     $counts = array_filter($queue->getBackend()->countJobs());
+    // Ensure that no renewal is scheduled when scheduling the subscription for
+    // cancellation, the scheduled changes are applied at the end of the billing
+    // period, right before attempting to queue the jobs.
+    $this->assertEquals([Job::STATE_QUEUED => 1], $counts);
+
+    $job1 = $queue->getBackend()->claimJob();
+    $this->assertArraySubset(['order_id' => $first_order->id()], $job1->getPayload());
+    $this->assertEquals('commerce_recurring_order_close', $job1->getType());
+
+    $first_order->delete();
+    // Remove all the items from the queue.
+    $queue->getBackend()->deleteQueue();
+    // Re-activate the subscription, with a prepaid billing schedule, and
+    // schedule it for cancellation right after the recurring order is created,
+    // and ensure the recurring order is not queued for renewal/closing.
+    $this->billingSchedule->setBillingType( BillingScheduleInterface::BILLING_TYPE_PREPAID);
+    $this->billingSchedule->save();
+    $first_subscription->setBillingSchedule($this->billingSchedule);
+    $first_subscription->setState('active');
+    $first_subscription->save();
+    $this->recurringOrderManager->ensureOrder($first_subscription);
+    $first_subscription->cancel()->save();
+    $this->container->get('commerce_recurring.cron')->run();
+    $counts = array_filter($queue->getBackend()->countJobs());
+    $this->assertEmpty($counts);
+
+    // Assert that 2 jobs are correctly queued, if the subscription isn't
+    // scheduled for cancellation.
+    $first_subscription->setState('active')->save();
+    $recurring_order = $this->recurringOrderManager->ensureOrder($first_subscription);
+    $this->container->get('commerce_recurring.cron')->run();
+    $counts = array_filter($queue->getBackend()->countJobs());
     $this->assertEquals([Job::STATE_QUEUED => 2], $counts);
 
     $job1 = $queue->getBackend()->claimJob();
-    $job2 = $queue->getBackend()->claimJob();
-    $this->assertArraySubset(['order_id' => '1'], $job1->getPayload());
+    $this->assertArraySubset(['order_id' => $recurring_order->id()], $job1->getPayload());
     $this->assertEquals('commerce_recurring_order_close', $job1->getType());
-    $this->assertArraySubset(['order_id' => '1'], $job2->getPayload());
+    $job2 = $queue->getBackend()->claimJob();
+    $this->assertArraySubset(['order_id' => $recurring_order->id()], $job2->getPayload());
     $this->assertEquals('commerce_recurring_order_renew', $job2->getType());
   }
 

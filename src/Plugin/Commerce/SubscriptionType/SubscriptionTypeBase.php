@@ -86,8 +86,10 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
     $end_date = $subscription->getEndDate();
     $billing_type = $subscription->getBillingSchedule()->getBillingType();
     if ($billing_type == BillingScheduleInterface::BILLING_TYPE_PREPAID) {
-      if ($subscription->getState()->value != 'active') {
-        // The subscription has ended, nothing left to prepay.
+      // The subscription has either ended, or is scheduled for cancellation,
+      // meaning there's nothing left to prepay.
+      if ($subscription->getState()->value != 'active' ||
+        $subscription->hasScheduledChange('state', 'canceled')) {
         return [];
       }
       $billing_schedule = $subscription->getBillingSchedule()->getPlugin();
