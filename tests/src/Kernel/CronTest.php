@@ -91,7 +91,7 @@ class CronTest extends RecurringKernelTestBase {
     // Re-activate the subscription, with a prepaid billing schedule, and
     // schedule it for cancellation right after the recurring order is created,
     // and ensure the recurring order is not queued for renewal/closing.
-    $this->billingSchedule->setBillingType( BillingScheduleInterface::BILLING_TYPE_PREPAID);
+    $this->billingSchedule->setBillingType(BillingScheduleInterface::BILLING_TYPE_PREPAID);
     $this->billingSchedule->save();
     $first_subscription->setBillingSchedule($this->billingSchedule);
     $first_subscription->setState('active');

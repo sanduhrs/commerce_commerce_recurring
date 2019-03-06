@@ -87,7 +87,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $configuration = $this->billingSchedule->getPluginConfiguration();
     $configuration['trial_interval'] = [
       'number' => '1',
-      'unit' => 'hour'
+      'unit' => 'hour',
     ];
     $this->billingSchedule->setPluginConfiguration($configuration);
     $this->billingSchedule->save();

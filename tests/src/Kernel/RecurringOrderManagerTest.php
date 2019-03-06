@@ -7,7 +7,6 @@ use Drupal\commerce_payment\Exception\HardDeclineException;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\Subscription;
-use Drupal\commerce_recurring\ScheduledChange;
 use Drupal\Core\Datetime\DrupalDateTime;
 
 /**

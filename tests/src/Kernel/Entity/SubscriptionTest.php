@@ -5,7 +5,6 @@ namespace Drupal\Tests\commerce_recurring\Kernel\Entity;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\BillingPeriod;
-use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\Subscription;
 use Drupal\commerce_recurring\Plugin\Commerce\SubscriptionType\SubscriptionTypeInterface;
 use Drupal\commerce_recurring\ScheduledChange;

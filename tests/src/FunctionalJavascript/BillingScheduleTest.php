@@ -26,8 +26,8 @@ class BillingScheduleTest extends CommerceWebDriverTestBase {
    */
   protected function getAdministratorPermissions() {
     return [
-        'administer commerce_billing_schedule',
-      ] + parent::getAdministratorPermissions();
+      'administer commerce_billing_schedule',
+    ] + parent::getAdministratorPermissions();
   }
 
   /**

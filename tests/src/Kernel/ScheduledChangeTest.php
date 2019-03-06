@@ -3,7 +3,6 @@
 namespace Drupal\Tests\commerce_recurring\Kernel;
 
 use Drupal\commerce_recurring\ScheduledChange;
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
