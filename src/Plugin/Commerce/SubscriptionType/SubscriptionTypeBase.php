@@ -81,9 +81,39 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
   /**
    * {@inheritdoc}
    */
+  public function collectTrialCharges(SubscriptionInterface $subscription, BillingPeriod $trial_period) {
+    $start_date = $subscription->getStartDate();
+    $billing_type = $subscription->getBillingSchedule()->getBillingType();
+    if ($billing_type == BillingScheduleInterface::BILLING_TYPE_PREPAID) {
+      $billing_schedule = $subscription->getBillingSchedule()->getPlugin();
+      // The base charge for prepaid subscriptions always covers the next
+      // period, which in the case of trials is the first billing period.
+      $base_unit_price = $subscription->getUnitPrice();
+      $base_billing_period = $billing_schedule->generateFirstBillingPeriod($start_date);
+      $base_billing_period = $this->adjustBillingPeriod($base_billing_period, $subscription);
+    }
+    else {
+      // The base charge for postpaid subscriptions covers the current (trial)
+      // period, which means that the plan needs to be free.
+      $base_unit_price = $subscription->getUnitPrice()->multiply('0');
+      $base_billing_period = $trial_period;
+    }
+    $base_charge = new Charge([
+      'purchased_entity' => $subscription->getPurchasedEntity(),
+      'title' => $subscription->getTitle(),
+      'quantity' => $subscription->getQuantity(),
+      'unit_price' => $base_unit_price,
+      'billing_period' => $base_billing_period,
+    ]);
+
+    return [$base_charge];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function collectCharges(SubscriptionInterface $subscription, BillingPeriod $billing_period) {
     $start_date = $subscription->getStartDate();
-    $end_date = $subscription->getEndDate();
     $billing_type = $subscription->getBillingSchedule()->getBillingType();
     if ($billing_type == BillingScheduleInterface::BILLING_TYPE_PREPAID) {
       // The subscription has either ended, or is scheduled for cancellation,
@@ -101,28 +131,46 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
     else {
       // Postpaid means we're always charging for the current billing period.
       // The October recurring order (ending on Nov 1st) charges for October.
-      $base_start_date = $billing_period->getStartDate();
-      $base_end_date = $billing_period->getEndDate();
-      if ($billing_period->contains($start_date)) {
-        // The subscription started after the billing period (E.g: customer
-        // subscribed on Mar 10th for a Mar 1st - Apr 1st period).
-        $base_start_date = $start_date;
-      }
-      if ($end_date && $billing_period->contains($end_date)) {
-        // The subscription ended before the end of the billing period.
-        $base_end_date = $end_date;
-      }
-      $base_billing_period = new BillingPeriod($base_start_date, $base_end_date);
+      $base_billing_period = $billing_period;
     }
     $base_charge = new Charge([
       'purchased_entity' => $subscription->getPurchasedEntity(),
       'title' => $subscription->getTitle(),
       'quantity' => $subscription->getQuantity(),
       'unit_price' => $subscription->getUnitPrice(),
-      'billing_period' => $base_billing_period,
+      'billing_period' => $this->adjustBillingPeriod($base_billing_period, $subscription),
     ]);
 
     return [$base_charge];
+  }
+
+  /**
+   * Adjusts the billing period to reflect the subscription start/end dates.
+   *
+   * @param \Drupal\commerce_recurring\BillingPeriod $billing_period
+   *   The billing period.
+   * @param \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription
+   *   The subscription.
+   *
+   * @return \Drupal\commerce_recurring\BillingPeriod
+   *   The adjusted billing period.
+   */
+  protected function adjustBillingPeriod(BillingPeriod $billing_period, SubscriptionInterface $subscription) {
+    $subscription_start_date = $subscription->getStartDate();
+    $subscription_end_date = $subscription->getEndDate();
+    $start_date = $billing_period->getStartDate();
+    $end_date = $billing_period->getEndDate();
+    if ($billing_period->contains($subscription_start_date)) {
+      // The subscription started after the billing period (E.g: customer
+      // subscribed on Mar 10th for a Mar 1st - Apr 1st period).
+      $start_date = $subscription_start_date;
+    }
+    if ($subscription_end_date && $billing_period->contains($subscription_end_date)) {
+      // The subscription ended before the end of the billing period.
+      $end_date = $subscription_end_date;
+    }
+
+    return new BillingPeriod($start_date, $end_date);
   }
 
   /**
@@ -133,7 +181,7 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
   /**
    * {@inheritdoc}
    */
-  public function onSubscriptionTrialStart(SubscriptionInterface $subscription) {}
+  public function onSubscriptionTrialStart(SubscriptionInterface $subscription, OrderInterface $order) {}
 
   /**
    * {@inheritdoc}

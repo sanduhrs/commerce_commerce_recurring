@@ -599,10 +599,12 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
    */
   public function cancel($schedule = TRUE) {
     if ($schedule) {
-      $this->addScheduledChange('state', 'canceled');
+      $transition = $this->getState()->getWorkflow()->getTransition('cancel');
+      $state_id = $transition->getToState()->getId();
+      $this->addScheduledChange('state', $state_id);
     }
     else {
-      $this->setState('canceled');
+      $this->getState()->applyTransitionById('cancel');
     }
     return $this;
   }
@@ -636,10 +638,11 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
           $trial_period = $billing_schedule_plugin->generateTrialPeriod($this->getTrialStartDate());
           $trial_end_time = $trial_period->getEndDate()->getTimestamp();
           $this->setTrialEndTime($trial_end_time);
-          $this->setStartTime($trial_end_time);
         }
       }
-      $this->getType()->onSubscriptionTrialStart($this);
+      if (empty($this->getStartTime()) && !empty($this->getTrialEndTime())) {
+        $this->setStartTime($this->getTrialEndTime());
+      }
     }
     elseif ($state === 'active' && $original_state !== 'active') {
       if (empty($this->getStartTime())) {
@@ -668,8 +671,8 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
    */
   public function postSave(EntityStorageInterface $storage, $update = TRUE) {
     parent::postSave($storage, $update);
-    $current_order = $this->getCurrentOrder();
 
+    $current_order = $this->getCurrentOrder();
     if (!isset($this->original) || empty($current_order)) {
       return;
     }

@@ -45,6 +45,30 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
   /**
    * {@inheritdoc}
    */
+  public function startTrial(SubscriptionInterface $subscription) {
+    $state = $subscription->getState()->getId();
+    if ($state != 'trial') {
+      throw new \InvalidArgumentException(sprintf('Unexpected subscription state "%s".', $state));
+    }
+
+    $start_date = $subscription->getTrialStartDate();
+    $end_date = $subscription->getTrialEndDate();
+    $trial_period = new BillingPeriod($start_date, $end_date);
+    $order = $this->createOrder($subscription, $trial_period);
+    $this->applyCharges($order, $subscription, $trial_period);
+    // Allow the type to modify the subscription and order before they're saved.
+    $subscription->getType()->onSubscriptionTrialStart($subscription, $order);
+
+    $order->save();
+    $subscription->addOrder($order);
+    $subscription->save();
+
+    return $order;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function startRecurring(SubscriptionInterface $subscription) {
     $state = $subscription->getState()->getId();
     if ($state != 'active') {
@@ -138,10 +162,8 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     $subscriptions = $this->collectSubscriptions($order);
     /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
     $subscription = reset($subscriptions);
-
-    // Cannot renew the order if the subscription no longer exists, or if it's
-    // not active anymore.
     if (!$subscription || $subscription->getState()->getId() != 'active') {
+      // The subscription was deleted or deactivated.
       return NULL;
     }
 
@@ -235,9 +257,14 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
         $existing_order_items[] = $order_item;
       }
     }
+    if ($subscription->getState()->getId() == 'trial') {
+      $charges = $subscription->getType()->collectTrialCharges($subscription, $billing_period);
+    }
+    else {
+      $charges = $subscription->getType()->collectCharges($subscription, $billing_period);
+    }
 
     $order_items = [];
-    $charges = $subscription->getType()->collectCharges($subscription, $billing_period);
     foreach ($charges as $charge) {
       $order_item = array_shift($existing_order_items);
       if (!$order_item) {

@@ -22,6 +22,27 @@ use Drupal\commerce_recurring\Entity\SubscriptionInterface;
 interface RecurringOrderManagerInterface {
 
   /**
+   * Starts the trial for the given subscription.
+   *
+   * Creates a recurring order covering the trial period.
+   * The order will be closed once the trial period is over.
+   *
+   * Since there can only be a single trial period, the trial order is one-off,
+   * never renewed. A new recurring order is created by startRecurring() once
+   * the subscription is activated.
+   *
+   * @param \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription
+   *   The trial subscription.
+   *
+   * @return \Drupal\commerce_order\Entity\OrderInterface
+   *   The trial recurring order.
+   *
+   * @throws \InvalidArgumentException
+   *   Thrown if subscription state is not "trial".
+   */
+  public function startTrial(SubscriptionInterface $subscription);
+
+  /**
    * Starts the recurring process for the given subscription.
    *
    * Creates a recurring order covering the first billing period.
@@ -42,7 +63,7 @@ interface RecurringOrderManagerInterface {
    * Refreshes the given recurring order.
    *
    * Each subscription's order items will be rebuilt based on the most
-   * recent chargers.
+   * recent charges.
    *
    * @param \Drupal\commerce_order\Entity\OrderInterface $order
    *   The recurring order.

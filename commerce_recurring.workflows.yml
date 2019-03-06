@@ -48,10 +48,6 @@ subscription_default:
     canceled:
       label: Canceled
   transitions:
-    trial_cancel:
-      label: Trial cancel
-      from: [trial]
-      to: canceled
     activate:
       label: Activate
       from: [pending, trial]
@@ -62,5 +58,5 @@ subscription_default:
       to: expired
     cancel:
       label: Cancel
-      from: [active]
+      from: [trial, active]
       to: canceled

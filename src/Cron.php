@@ -64,6 +64,7 @@ class Cron implements CronInterface {
     $subscription_ids = $subscription_storage->getQuery()
       ->condition('state', ['pending', 'trial'], 'IN')
       ->condition('starts', $this->time->getRequestTime(), '<=')
+      ->accessCheck(FALSE)
       ->execute();
 
     if (!$order_ids && !$subscription_ids) {
@@ -87,8 +88,16 @@ class Cron implements CronInterface {
 
       $subscription = reset($subscriptions);
       if ($subscription->hasScheduledChanges()) {
+        $previous_state = $subscription->getState()->getId();
         $subscription->applyScheduledChanges();
         $subscription->save();
+        $new_state = $subscription->getState()->getId();
+        // Don't try to activate a trial that was just canceled.
+        if ($previous_state == 'trial' && $previous_state != $new_state) {
+          if (in_array($subscription->id(), $subscription_ids)) {
+            $subscription_ids = array_diff($subscription_ids, [$subscription->id()]);
+          }
+        }
       }
       // If the subscription was scheduled for cancellation, applying the
       // scheduled changes has resulted in both the subscription and its
@@ -100,7 +109,7 @@ class Cron implements CronInterface {
         ]);
         $recurring_queue->enqueueJob($close_job);
       }
-      // Recurring orders are renewed only if their subscription is still active.
+      // Recurring orders are renewed only if their subscription is active.
       if ($subscription->getState()->getId() == 'active') {
         $renew_job = Job::create('commerce_recurring_order_renew', [
           'order_id' => $order->id(),

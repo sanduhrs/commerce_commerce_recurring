@@ -38,6 +38,19 @@ interface SubscriptionTypeInterface extends BundlePluginInterface {
   public function getPurchasableEntityTypeId();
 
   /**
+   * Collects charges for a subscription's trial period.
+   *
+   * @param \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription
+   *   The subscription.
+   * @param \Drupal\commerce_recurring\BillingPeriod $trial_period
+   *   The trial period.
+   *
+   * @return \Drupal\commerce_recurring\Charge[]
+   *   The charges.
+   */
+  public function collectTrialCharges(SubscriptionInterface $subscription, BillingPeriod $trial_period);
+
+  /**
    * Collects charges for a subscription's billing period.
    *
    * @param \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription
@@ -65,12 +78,14 @@ interface SubscriptionTypeInterface extends BundlePluginInterface {
   /**
    * Acts on a subscription after a trial has been started.
    *
-   * Called before the subscription is saved.
+   * Called before the subscription and trial recurring order are saved.
    *
    * @param \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription
    *   The subscription.
+   * @param \Drupal\commerce_order\Entity\OrderInterface $order
+   *   The trial recurring order.
    */
-  public function onSubscriptionTrialStart(SubscriptionInterface $subscription);
+  public function onSubscriptionTrialStart(SubscriptionInterface $subscription, OrderInterface $order);
 
   /**
    * Acts on a subscription after a trial has been canceled.
@@ -85,8 +100,8 @@ interface SubscriptionTypeInterface extends BundlePluginInterface {
   /**
    * Acts on a subscription after it has been activated.
    *
-   * Detecting if a trial just ended can be achieved by checking the original
-   * subscription state ($subscription->original->getState()->getId() == 'trial').
+   * If a trial just ended, $subscription->getTrialEndTime() will be non-empty
+   * and $subscription->getOrders() will have a single order (the trial order).
    *
    * Called before the subscription and recurring order are saved.
    *

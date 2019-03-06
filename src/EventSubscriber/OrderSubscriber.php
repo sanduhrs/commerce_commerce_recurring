@@ -106,6 +106,7 @@ class OrderSubscriber implements EventSubscriberInterface {
         $subscription->setState('trial');
         $subscription->setTrialStartTime($start_time);
         $subscription->save();
+        $this->recurringOrderManager->startTrial($subscription);
       }
       else {
         $subscription->setState('active');
@@ -143,13 +144,17 @@ class OrderSubscriber implements EventSubscriberInterface {
       }
 
       /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface[] $subscriptions */
-      $subscriptions = $subscription_storage->loadByProperties([
-        'initial_order' => $order->id(),
-        'state' => 'active',
-      ]);
-      foreach ($subscriptions as $subscription) {
-        $subscription->setState('canceled');
-        $subscription->save();
+      $query = $subscription_storage->getQuery();
+      $query
+        ->condition('initial_order', $order->id())
+        ->condition('state', ['trial', 'active'], 'IN');
+      $result = $query->execute();
+      if ($result) {
+        $subscriptions = $subscription_storage->loadMultiple($result);
+        foreach ($subscriptions as $subscription) {
+          $subscription->getState()->applyTransitionById('cancel');
+          $subscription->save();
+        }
       }
     }
   }

@@ -42,7 +42,6 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
    * @covers ::process
    */
   public function testActivate() {
-    // A subscription that's already active.
     /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
     $subscription = Subscription::create([
       'type' => 'product_variation',
@@ -57,6 +56,7 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
     ]);
     $subscription->save();
 
+    // Confirm that it is not possible to active an already-active subscription.
     $job = Job::create('commerce_subscription_activate', [
       'subscription_id' => $subscription->id(),
     ]);
@@ -66,11 +66,8 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
     /** @var \Drupal\advancedqueue\ProcessorInterface $processor */
     $processor = \Drupal::service('advancedqueue.processor');
     $result = $processor->processJob($job, $this->queue);
-
-    // Confirm that the job result is correct.
     $this->assertEquals(Job::STATE_FAILURE, $result->getState());
 
-    // A subscription that's pending.
     /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
     $subscription = Subscription::create([
       'type' => 'product_variation',
@@ -85,6 +82,7 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
     ]);
     $subscription->save();
 
+    // Confirm that it is possible to activate a pending subscription.
     $job = Job::create('commerce_subscription_activate', [
       'subscription_id' => $subscription->id(),
     ]);
@@ -92,19 +90,13 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
     $job = $this->queue->getBackend()->claimJob();
 
     $result = $processor->processJob($job, $this->queue);
-    // Confirm that the job result is correct.
     $this->assertEquals(Job::STATE_SUCCESS, $result->getState());
-
-    // Confirm that the subscription was activated.
     $subscription = $this->reloadEntity($subscription);
     $this->assertEquals('active', $subscription->getState()->getId());
-
-    // Confirm that recurring order was created.
-    $this->assertNotEmpty($subscription->getOrders());
+    $this->assertCount(1, $subscription->getOrders());
     $order = $subscription->getOrders()[0];
     $this->assertEquals(new Price('2', 'USD'), $order->getTotalPrice());
 
-    // Test activating a trial subscription.
     /** @var \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription */
     $subscription = Subscription::create([
       'type' => 'product_variation',
@@ -116,29 +108,27 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
       'unit_price' => new Price('3', 'USD'),
       'state' => 'trial',
       'trial_starts' => strtotime('2017-02-24 17:00'),
+      'trial_ends' => strtotime('2017-02-24 18:00'),
       'starts' => strtotime('2017-02-24 18:00'),
     ]);
     $subscription->save();
+    $this->recurringOrderManager->startTrial($subscription);
 
+    // Confirm that it is possible to activate a trial subscription.
     $job = Job::create('commerce_subscription_activate', [
       'subscription_id' => $subscription->id(),
     ]);
-
     $this->queue->enqueueJob($job);
     $job = $this->queue->getBackend()->claimJob();
 
     /** @var \Drupal\advancedqueue\ProcessorInterface $processor */
     $result = $processor->processJob($job, $this->queue);
-    // Confirm that the job result is correct.
     $this->assertEquals(Job::STATE_SUCCESS, $result->getState());
-
-    // Confirm that the subscription was activated.
     $subscription = $this->reloadEntity($subscription);
     $this->assertEquals('active', $subscription->getState()->getId());
-
-    // Confirm that a recurring order was created.
-    $this->assertNotEmpty($subscription->getOrders());
-    $order = $subscription->getOrders()[0];
+    // One order for the trial period, one for the first billing period.
+    $this->assertCount(2, $subscription->getOrders());
+    $order = $subscription->getOrders()[1];
     $this->assertEquals(new Price('3', 'USD'), $order->getTotalPrice());
   }
 
