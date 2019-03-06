@@ -256,4 +256,39 @@ class SubscriptionTest extends RecurringKernelTestBase {
     $this->assertFalse($subscription->hasScheduledChanges());
   }
 
+  /**
+   * Tests the automatic timestamp generation for trials.
+   *
+   * @covers ::preSave
+   */
+  public function testTrialTimestamps() {
+    $configuration = $this->billingSchedule->getPluginConfiguration();
+    $configuration['trial_interval'] = [
+      'number' => $configuration['interval']['number'],
+      'unit' => $configuration['interval']['unit'],
+    ];
+    $this->billingSchedule->setPluginConfiguration($configuration);
+    $this->billingSchedule->save();
+
+    $trial_subscription = Subscription::create([
+      'type' => 'product_variation',
+      'store_id' => $this->store->id(),
+      'billing_schedule' => $this->billingSchedule,
+      'uid' => 0,
+      'payment_method' => $this->paymentMethod,
+      'title' => 'My subscription',
+      'purchased_entity' => $this->variation,
+      'quantity' => 2,
+      'unit_price' => new Price('2', 'USD'),
+      'state' => 'trial',
+      'created' => 1507642328,
+      'trial_starts' => 1507642328,
+    ]);
+    $trial_subscription->save();
+
+    $this->assertEquals(1507642328, $trial_subscription->getTrialStartTime());
+    $this->assertEquals(1507642328 + 3600, $trial_subscription->getTrialEndTime());
+    $this->assertEquals(1507642328 + 3600, $trial_subscription->getStartTime());
+  }
+
 }

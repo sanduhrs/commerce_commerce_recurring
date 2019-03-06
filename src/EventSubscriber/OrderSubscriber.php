@@ -4,7 +4,6 @@ namespace Drupal\commerce_recurring\EventSubscriber;
 
 use Drupal\commerce_recurring\RecurringOrderManagerInterface;
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\state_machine\Event\WorkflowTransitionEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -72,7 +71,7 @@ class OrderSubscriber implements EventSubscriberInterface {
       return;
     }
     $payment_method = $order->get('payment_method')->entity;
-    $start_date = DrupalDateTime::createFromTimestamp($this->time->getRequestTime());
+    $start_time = $this->time->getRequestTime();
 
     foreach ($order->getItems() as $order_item) {
       $purchased_entity = $order_item->getPurchasedEntity();
@@ -104,17 +103,13 @@ class OrderSubscriber implements EventSubscriberInterface {
       }
 
       if ($billing_schedule->getPlugin()->allowTrials()) {
-        $trial_period = $billing_schedule->getPlugin()->generateTrialPeriod($start_date);
-        $trial_start = $trial_period->getStartDate()->getTimestamp();
-        $trial_end = $trial_period->getEndDate()->getTimestamp();
         $subscription->setState('trial');
-        $subscription->setTrialStartTime($trial_start);
-        $subscription->setTrialEndTime($trial_end);
-        $subscription->setStartTime($trial_end);
+        $subscription->setTrialStartTime($start_time);
         $subscription->save();
       }
       else {
         $subscription->setState('active');
+        $subscription->setStartTime($start_time);
         $subscription->save();
         $this->recurringOrderManager->ensureOrder($subscription);
       }

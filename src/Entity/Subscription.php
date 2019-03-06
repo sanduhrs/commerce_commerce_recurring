@@ -630,6 +630,15 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
       if (empty($this->getTrialStartTime())) {
         $this->setTrialStartTime(\Drupal::time()->getRequestTime());
       }
+      if (empty($this->getTrialEndTime()) && $billing_schedule = $this->getBillingSchedule()) {
+        $billing_schedule_plugin = $billing_schedule->getPlugin();
+        if ($billing_schedule_plugin->allowTrials()) {
+          $trial_period = $billing_schedule_plugin->generateTrialPeriod($this->getTrialStartDate());
+          $trial_end_time = $trial_period->getEndDate()->getTimestamp();
+          $this->setTrialEndTime($trial_end_time);
+          $this->setStartTime($trial_end_time);
+        }
+      }
       $this->getType()->onSubscriptionTrialStart($this);
     }
     elseif ($state === 'active' && $original_state !== 'active') {
