@@ -97,8 +97,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
    */
   public function closeOrder(OrderInterface $order) {
     if ($order->getState()->value == 'draft') {
-      $transition = $order->getState()->getWorkflow()->getTransition('place');
-      $order->getState()->applyTransition($transition);
+      $order->getState()->applyTransitionById('place');
       $order->save();
     }
 
@@ -123,8 +122,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     // supposed to be handled by the caller, to allow for dunning.
     $payment_gateway_plugin->createPayment($payment);
 
-    $transition = $order->getState()->getWorkflow()->getTransition('mark_paid');
-    $order->getState()->applyTransition($transition);
+    $order->getState()->applyTransitionById('mark_paid');
     $order->save();
   }
 

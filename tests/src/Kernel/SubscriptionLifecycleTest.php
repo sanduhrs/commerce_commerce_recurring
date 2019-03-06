@@ -76,8 +76,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
 
     // Confirm that placing an order with no payment method and a billing
     // schedule that doesn't allow trial doesn't create the subscription.
-    $workflow = $initial_order->getState()->getWorkflow();
-    $initial_order->getState()->applyTransition($workflow->getTransition('place'));
+    $initial_order->getState()->applyTransitionById('place');
     $initial_order->save();
 
     $subscriptions = Subscription::loadMultiple();
@@ -97,8 +96,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $initial_order->save();
     // Confirm that placing an order without a payment method when the billing
     // schedule allows free trials creates a subscription.
-    $workflow = $initial_order->getState()->getWorkflow();
-    $initial_order->getState()->applyTransition($workflow->getTransition('place'));
+    $initial_order->getState()->applyTransitionById('place');
     $initial_order->save();
 
     $subscriptions = Subscription::loadMultiple();
@@ -131,8 +129,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $initial_order->set('state', 'draft');
     $initial_order->set('payment_method', $this->paymentMethod);
     $initial_order->save();
-    $workflow = $initial_order->getState()->getWorkflow();
-    $initial_order->getState()->applyTransition($workflow->getTransition('place'));
+    $initial_order->getState()->applyTransitionById('place');
     $initial_order->save();
 
     $subscriptions = Subscription::loadMultiple();
@@ -169,7 +166,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $this->assertEquals($subscription->id(), $order_item->get('subscription')->target_id);
 
     // Test initial order cancellation.
-    $initial_order->getState()->applyTransition($workflow->getTransition('cancel'));
+    $initial_order->getState()->applyTransitionById('cancel');
     $initial_order->save();
     $subscription = $this->reloadEntity($subscription);
     $this->assertEquals('canceled', $subscription->getState()->value);

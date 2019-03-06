@@ -123,8 +123,7 @@ abstract class RecurringJobTypeBase extends JobTypeBase implements ContainerFact
    *   Whether the order should be saved after the operation.
    */
   protected function handleFailedOrder(OrderInterface $order, $save_order = TRUE) {
-    $transition = $order->getState()->getWorkflow()->getTransition('mark_failed');
-    $order->getState()->applyTransition($transition);
+    $order->getState()->applyTransitionById('mark_failed');
 
     /** @var \Drupal\commerce_recurring\Entity\BillingScheduleInterface $billing_schedule */
     $billing_schedule = $order->get('billing_schedule')->entity;
