@@ -619,8 +619,8 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
       }
     }
 
-    $state = $this->getState()->value;
-    $original_state = isset($this->original) ? $this->original->getState()->value : '';
+    $state = $this->getState()->getId();
+    $original_state = isset($this->original) ? $this->original->getState()->getId() : '';
 
     if ($original_state !== $state) {
       $this->removeScheduledChanges();

@@ -61,7 +61,7 @@ class OrderRefreshTest extends RecurringKernelTestBase {
     $subscription->cancel()->save();
     $order->save();
 
-    $this->assertEquals('canceled', $order->getState()->value);
+    $this->assertEquals('canceled', $order->getState()->getId());
     $this->assertEmpty($order->getItems());
   }
 

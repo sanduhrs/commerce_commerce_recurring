@@ -96,7 +96,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
    * {@inheritdoc}
    */
   public function closeOrder(OrderInterface $order) {
-    if ($order->getState()->value == 'draft') {
+    if ($order->getState()->getId() == 'draft') {
       $order->getState()->applyTransitionById('place');
       $order->save();
     }
@@ -136,7 +136,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
 
     // Cannot renew the order if the subscription no longer exists, or if it's
     // not active anymore.
-    if (!$subscription || $subscription->getState()->value != 'active') {
+    if (!$subscription || $subscription->getState()->getId() != 'active') {
       return NULL;
     }
 

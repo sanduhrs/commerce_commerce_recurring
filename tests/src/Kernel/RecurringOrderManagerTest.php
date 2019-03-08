@@ -118,7 +118,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->reloadEntity($order_item);
     $this->recurringOrderManager->refreshOrder($order);
 
-    $this->assertEquals('canceled', $order->getState()->value);
+    $this->assertEquals('canceled', $order->getState()->getId());
     $this->assertEmpty($order->getItems());
   }
 
@@ -141,7 +141,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $order = $this->recurringOrderManager->ensureOrder($this->subscription);
     $this->recurringOrderManager->closeOrder($order);
 
-    $this->assertEquals('completed', $order->getState()->value);
+    $this->assertEquals('completed', $order->getState()->getId());
     /** @var \Drupal\commerce_payment\PaymentStorageInterface $payment_storage */
     $payment_storage = $this->container->get('entity_type.manager')->getStorage('commerce_payment');
     $payments = $payment_storage->loadMultipleByOrder($order);
@@ -152,7 +152,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->assertEquals($this->paymentMethod->id(), $payment->getPaymentMethodId());
     $this->assertEquals($order->id(), $payment->getOrderId());
     $this->assertEquals($order->getTotalPrice(), $payment->getAmount());
-    $this->assertEquals('completed', $payment->getState()->value);
+    $this->assertEquals('completed', $payment->getState()->getId());
   }
 
   /**
@@ -207,7 +207,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->assertEquals($this->billingSchedule->id(), $order->get('billing_schedule')->target_id);
     $this->assertEquals($this->paymentMethod->id(), $order->get('payment_method')->target_id);
     $this->assertEquals($this->paymentGateway->id(), $order->get('payment_gateway')->target_id);
-    $this->assertEquals('draft', $order->getState()->value);
+    $this->assertEquals('draft', $order->getState()->getId());
   }
 
 }

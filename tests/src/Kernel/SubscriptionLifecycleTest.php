@@ -112,7 +112,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $this->assertEquals($this->variation->getOrderItemTitle(), $subscription->getTitle());
     $this->assertEquals('3', $subscription->getQuantity());
     $this->assertEquals($this->variation->getPrice(), $subscription->getUnitPrice());
-    $this->assertEquals('trial', $subscription->getState()->value);
+    $this->assertEquals('trial', $subscription->getState()->getId());
     $this->assertEquals($initial_order->id(), $subscription->getInitialOrderId());
     $this->assertNotEmpty($subscription->getTrialStartTime());
     $this->assertNotEmpty($subscription->getTrialEndTime());
@@ -145,7 +145,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $this->assertEquals($this->variation->getOrderItemTitle(), $subscription->getTitle());
     $this->assertEquals('3', $subscription->getQuantity());
     $this->assertEquals($this->variation->getPrice(), $subscription->getUnitPrice());
-    $this->assertEquals('active', $subscription->getState()->value);
+    $this->assertEquals('active', $subscription->getState()->getId());
     $this->assertEquals($initial_order->id(), $subscription->getInitialOrderId());
 
     // Confirm that a recurring order is present.
@@ -169,7 +169,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $initial_order->getState()->applyTransitionById('cancel');
     $initial_order->save();
     $subscription = $this->reloadEntity($subscription);
-    $this->assertEquals('canceled', $subscription->getState()->value);
+    $this->assertEquals('canceled', $subscription->getState()->getId());
   }
 
 }

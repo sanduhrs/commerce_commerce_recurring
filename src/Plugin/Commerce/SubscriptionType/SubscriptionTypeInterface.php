@@ -86,7 +86,7 @@ interface SubscriptionTypeInterface extends BundlePluginInterface {
    * Acts on a subscription after it has been activated.
    *
    * Detecting if a trial just ended can be achieved by checking the original
-   * subscription state ($subscription->original->getState()->value == 'trial').
+   * subscription state ($subscription->original->getState()->getId() == 'trial').
    *
    * Called before the subscription and recurring order are saved.
    *

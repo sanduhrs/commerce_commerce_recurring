@@ -110,7 +110,7 @@ class SubscriptionForm extends ContentEntityForm {
 
     // The trial date field should be editable only when in trial mode, or
     // when the subscription is new.
-    if (!$subscription->isNew() && $subscription->getState()->value != 'trial') {
+    if (!$subscription->isNew() && $subscription->getState()->getId() != 'trial') {
       $form['trial_date_details']['#access'] = FALSE;
 
     }
@@ -124,7 +124,7 @@ class SubscriptionForm extends ContentEntityForm {
     }
     // Hide the dates if the subscription is canceled and show read-only dates
     // instead.
-    if ($subscription->getState()->value == 'canceled') {
+    if ($subscription->getState()->getId() == 'canceled') {
       $form['date_details']['#access'] = FALSE;
       if ($starts = $subscription->getStartTime()) {
         $starts = $this->dateFormatter->format($starts, 'short');

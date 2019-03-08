@@ -97,7 +97,7 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
 
     // Confirm that the subscription was activated.
     $subscription = $this->reloadEntity($subscription);
-    $this->assertEquals('active', $subscription->getState()->value);
+    $this->assertEquals('active', $subscription->getState()->getId());
 
     // Confirm that recurring order was created.
     $this->assertNotEmpty($subscription->getOrders());
@@ -134,7 +134,7 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
 
     // Confirm that the subscription was activated.
     $subscription = $this->reloadEntity($subscription);
-    $this->assertEquals('active', $subscription->getState()->value);
+    $this->assertEquals('active', $subscription->getState()->getId());
 
     // Confirm that a recurring order was created.
     $this->assertNotEmpty($subscription->getOrders());

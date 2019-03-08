@@ -26,8 +26,8 @@ class SubscriptionActivate extends RecurringJobTypeBase {
     if (!$subscription) {
       return JobResult::failure('Subscription not found.');
     }
-    if (!in_array($subscription->getState()->value, ['pending', 'trial'], TRUE)) {
-      return JobResult::failure(sprintf('Unsupported subscription status. Supported statuses: ("trial", "pending"), Actual: "%s").', $subscription->getState()->value));
+    if (!in_array($subscription->getState()->getId(), ['pending', 'trial'], TRUE)) {
+      return JobResult::failure(sprintf('Unsupported subscription status. Supported statuses: ("trial", "pending"), Actual: "%s").', $subscription->getState()->getId()));
     }
     $subscription->getState()->applyTransitionById('activate');
     $subscription->save();

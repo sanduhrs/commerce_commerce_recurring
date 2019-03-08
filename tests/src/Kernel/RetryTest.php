@@ -82,7 +82,7 @@ class RetryTest extends RecurringKernelTestBase {
 
     // Confirm that the order was placed.
     $order = $this->reloadEntity($order);
-    $this->assertEquals('needs_payment', $order->getState()->value);
+    $this->assertEquals('needs_payment', $order->getState()->getId());
     // Confirm that the job result is correct.
     $this->assertEquals(Job::STATE_FAILURE, $result->getState());
     $this->assertEquals('Payment method not found.', $result->getMessage());
@@ -128,7 +128,7 @@ class RetryTest extends RecurringKernelTestBase {
 
     // Confirm that the order was marked as failed.
     $order = $this->reloadEntity($order);
-    $this->assertEquals('failed', $order->getState()->value);
+    $this->assertEquals('failed', $order->getState()->getId());
     // Confirm that the job result is correct.
     $this->assertEquals(Job::STATE_SUCCESS, $result->getState());
     $this->assertEquals('Dunning complete, recurring order not paid.', $result->getMessage());
@@ -137,7 +137,7 @@ class RetryTest extends RecurringKernelTestBase {
     $this->assertEquals(Job::STATE_SUCCESS, $job->getState());
     // Confirm that the subscription was canceled.
     $subscription = $this->reloadEntity($subscription);
-    $this->assertEquals('canceled', $subscription->getState()->value);
+    $this->assertEquals('canceled', $subscription->getState()->getId());
   }
 
   /**
@@ -186,7 +186,7 @@ class RetryTest extends RecurringKernelTestBase {
 
     // Confirm that the order was marked as failed.
     $order = $this->reloadEntity($order);
-    $this->assertEquals('failed', $order->getState()->value);
+    $this->assertEquals('failed', $order->getState()->getId());
 
     // Confirm that the job result is correct.
     $this->assertEquals(Job::STATE_FAILURE, $job->getState());
@@ -199,7 +199,7 @@ class RetryTest extends RecurringKernelTestBase {
 
     // Confirm that the subscription was canceled.
     $subscription = $this->reloadEntity($subscription);
-    $this->assertEquals('canceled', $subscription->getState()->value);
+    $this->assertEquals('canceled', $subscription->getState()->getId());
   }
 
   /**

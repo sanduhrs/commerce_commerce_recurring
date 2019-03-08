@@ -121,7 +121,7 @@ class SubscriptionTest extends CommerceBrowserTestBase {
 
     $subscription = Subscription::load(1);
     $this->assertSession()->pageTextContains($subscription->getTitle());
-    $this->assertSession()->pageTextContains($subscription->getState()->value);
+    $this->assertSession()->pageTextContains($subscription->getState()->getId());
     $this->assertSession()->pageTextContains($subscription->getBillingSchedule()->label());
     $this->assertEquals($values['title[0][value]'], $subscription->getTitle());
     $this->assertEquals($this->billingSchedule->id(), $subscription->getBillingSchedule()->id());
@@ -131,7 +131,7 @@ class SubscriptionTest extends CommerceBrowserTestBase {
     $this->assertEquals($start_date->getTimestamp(), $subscription->getStartTime());
     $this->assertNull($subscription->getPaymentMethod());
     $this->assertEquals($subscription->getCustomerId(), $this->adminUser->id());
-    $this->assertEquals('pending', $subscription->getState()->value);
+    $this->assertEquals('pending', $subscription->getState()->getId());
   }
 
   /**
