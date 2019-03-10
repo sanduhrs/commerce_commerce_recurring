@@ -17,7 +17,7 @@ class ExceptionPaymentMethod extends PaymentMethod {
    */
   public function getPaymentGateway() {
     // Throw an exception if the test tells us to via the state. We need this
-    // switch because ensureOrder() causes this method to be called, at which
+    // switch because startRecurring() causes this method to be called, at which
     // point we want things to behave normally.
     if (\Drupal::state()->get('commerce_recurring_test.payment_method_throw')) {
       throw new \Exception("This payment is failing dramatically!");

@@ -45,7 +45,7 @@ class OrderRefreshTest extends RecurringKernelTestBase {
       'starts' => strtotime('2017-02-24 17:00'),
     ]);
     $subscription->save();
-    $order = $this->recurringOrderManager->ensureOrder($subscription);
+    $order = $this->recurringOrderManager->startRecurring($subscription);
     $this->assertEquals(new Price('2', 'USD'), $order->getTotalPrice());
 
     $subscription->setUnitPrice(new Price('3', 'USD'));

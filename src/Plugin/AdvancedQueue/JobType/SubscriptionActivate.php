@@ -31,7 +31,7 @@ class SubscriptionActivate extends RecurringJobTypeBase {
     }
     $subscription->getState()->applyTransitionById('activate');
     $subscription->save();
-    $this->recurringOrderManager->ensureOrder($subscription);
+    $this->recurringOrderManager->startRecurring($subscription);
 
     return JobResult::success();
   }

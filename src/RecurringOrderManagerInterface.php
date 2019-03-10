@@ -7,19 +7,36 @@ use Drupal\commerce_recurring\Entity\SubscriptionInterface;
 
 /**
  * Manages recurring orders.
+ *
+ * Recurring orders are automatically started, kept up to date, closed, and
+ * renewed, for the purpose of paying for a trial or billing period.
+ *
+ * Recurring orders are always of type "recurring", and have billing_period
+ * and billing_schedule fields. Each order item is of a "recurring_" type
+ * (e.g. "recurring_standalone") and has billing_period and subscription fields.
+ * The order item's billing_period is compared with the order's billing_period
+ * during prorating.
+ *
+ * @see \Drupal\commerce_recurring\Plugin\Commerce\Prorater\ProraterInterface
  */
 interface RecurringOrderManagerInterface {
 
   /**
-   * Ensures a recurring order for the given subscription.
+   * Starts the recurring process for the given subscription.
+   *
+   * Creates a recurring order covering the first billing period.
+   * The order will be closed and renewed once the billing period is over.
    *
    * @param \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription
-   *   The subscription.
+   *   The active subscription.
    *
    * @return \Drupal\commerce_order\Entity\OrderInterface
    *   The recurring order.
+   *
+   * @throws \InvalidArgumentException
+   *   Thrown if subscription state is not "active".
    */
-  public function ensureOrder(SubscriptionInterface $subscription);
+  public function startRecurring(SubscriptionInterface $subscription);
 
   /**
    * Refreshes the given recurring order.

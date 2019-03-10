@@ -45,7 +45,12 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
   /**
    * {@inheritdoc}
    */
-  public function ensureOrder(SubscriptionInterface $subscription) {
+  public function startRecurring(SubscriptionInterface $subscription) {
+    $state = $subscription->getState()->getId();
+    if ($state != 'active') {
+      throw new \InvalidArgumentException(sprintf('Unexpected subscription state "%s".', $state));
+    }
+
     $start_date = $subscription->getStartDate();
     $billing_schedule = $subscription->getBillingSchedule();
     $billing_period = $billing_schedule->getPlugin()->generateFirstBillingPeriod($start_date);

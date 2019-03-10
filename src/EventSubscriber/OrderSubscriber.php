@@ -111,7 +111,7 @@ class OrderSubscriber implements EventSubscriberInterface {
         $subscription->setState('active');
         $subscription->setStartTime($start_time);
         $subscription->save();
-        $this->recurringOrderManager->ensureOrder($subscription);
+        $this->recurringOrderManager->startRecurring($subscription);
       }
     }
   }

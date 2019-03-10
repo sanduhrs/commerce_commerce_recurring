@@ -55,11 +55,22 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
   }
 
   /**
-   * @covers ::ensureOrder
+   * @covers ::startRecurring
+   */
+  public function testStartRecurringWithInactiveSubscription() {
+    $this->subscription->setState('pending');
+    $this->subscription->save();
+
+    $this->setExpectedException(\InvalidArgumentException::class, 'Unexpected subscription state "pending".');
+    $order = $this->recurringOrderManager->startRecurring($this->subscription);
+  }
+
+  /**
+   * @covers ::startRecurring
    * @covers ::collectSubscriptions
    */
-  public function testEnsureOrder() {
-    $order = $this->recurringOrderManager->ensureOrder($this->subscription);
+  public function testStartRecurring() {
+    $order = $this->recurringOrderManager->startRecurring($this->subscription);
     /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $billing_period_item */
     $billing_period_item = $order->get('billing_period')->first();
     $billing_period = $billing_period_item->toBillingPeriod();
@@ -90,7 +101,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
    * @covers ::refreshOrder
    */
   public function testRefreshOrder() {
-    $order = $this->recurringOrderManager->ensureOrder($this->subscription);
+    $order = $this->recurringOrderManager->startRecurring($this->subscription);
     $this->assertOrder($order);
     $order_items = $order->getItems();
     $order_item = reset($order_items);
@@ -128,9 +139,9 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
   public function testCloseOrderWithoutPaymentMethod() {
     $this->subscription->set('payment_method', NULL);
     $this->subscription->save();
+    $order = $this->recurringOrderManager->startRecurring($this->subscription);
 
     $this->setExpectedException(HardDeclineException::class, 'Payment method not found.');
-    $order = $this->recurringOrderManager->ensureOrder($this->subscription);
     $this->recurringOrderManager->closeOrder($order);
   }
 
@@ -138,7 +149,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
    * @covers ::closeOrder
    */
   public function testCloseOrder() {
-    $order = $this->recurringOrderManager->ensureOrder($this->subscription);
+    $order = $this->recurringOrderManager->startRecurring($this->subscription);
     $this->recurringOrderManager->closeOrder($order);
 
     $this->assertEquals('completed', $order->getState()->getId());
@@ -159,7 +170,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
    * @covers ::renewOrder
    */
   public function testRenewOrder() {
-    $order = $this->recurringOrderManager->ensureOrder($this->subscription);
+    $order = $this->recurringOrderManager->startRecurring($this->subscription);
     $next_order = $this->recurringOrderManager->renewOrder($order);
     /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $billing_period_item */
     $billing_period_item = $order->get('billing_period')->first();

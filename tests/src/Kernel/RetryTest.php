@@ -66,7 +66,7 @@ class RetryTest extends RecurringKernelTestBase {
       'starts' => strtotime('2017-02-24 17:00'),
     ]);
     $subscription->save();
-    $order = $this->recurringOrderManager->ensureOrder($subscription);
+    $order = $this->recurringOrderManager->startRecurring($subscription);
 
     // Rewind time to the end of the first subscription.
     $this->rewindTime(strtotime('2017-02-24 19:00'));
@@ -165,7 +165,7 @@ class RetryTest extends RecurringKernelTestBase {
       'payment_method' => $payment_method,
     ]);
     $subscription->save();
-    $order = $this->recurringOrderManager->ensureOrder($subscription);
+    $order = $this->recurringOrderManager->startRecurring($subscription);
 
     // Rewind time to the end of the first subscription.
     $this->rewindTime(strtotime('2017-02-24 19:00'));

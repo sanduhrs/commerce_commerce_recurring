@@ -49,7 +49,7 @@ class CronTest extends RecurringKernelTestBase {
       'starts' => strtotime('2017-02-24 17:00'),
     ]);
     $first_subscription->save();
-    $first_order = $this->recurringOrderManager->ensureOrder($first_subscription);
+    $first_order = $this->recurringOrderManager->startRecurring($first_subscription);
     // Schedule a cancellation.
     $first_subscription->cancel()->save();
 
@@ -66,7 +66,7 @@ class CronTest extends RecurringKernelTestBase {
       'starts' => strtotime('2017-02-25 17:00:00'),
     ]);
     $second_subscription->save();
-    $this->recurringOrderManager->ensureOrder($second_subscription);
+    $this->recurringOrderManager->startRecurring($second_subscription);
 
     // Rewind time to the end of the first subscription.
     // Confirm that only the first subscription's order was queued.
@@ -96,7 +96,7 @@ class CronTest extends RecurringKernelTestBase {
     $first_subscription->setBillingSchedule($this->billingSchedule);
     $first_subscription->setState('active');
     $first_subscription->save();
-    $this->recurringOrderManager->ensureOrder($first_subscription);
+    $this->recurringOrderManager->startRecurring($first_subscription);
     $first_subscription->cancel()->save();
     $this->container->get('commerce_recurring.cron')->run();
     $counts = array_filter($queue->getBackend()->countJobs());
@@ -105,7 +105,7 @@ class CronTest extends RecurringKernelTestBase {
     // Assert that 2 jobs are correctly queued, if the subscription isn't
     // scheduled for cancellation.
     $first_subscription->setState('active')->save();
-    $recurring_order = $this->recurringOrderManager->ensureOrder($first_subscription);
+    $recurring_order = $this->recurringOrderManager->startRecurring($first_subscription);
     $this->container->get('commerce_recurring.cron')->run();
     $counts = array_filter($queue->getBackend()->countJobs());
     $this->assertEquals([Job::STATE_QUEUED => 2], $counts);
