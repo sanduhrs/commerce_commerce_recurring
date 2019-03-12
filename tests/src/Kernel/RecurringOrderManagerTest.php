@@ -55,7 +55,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
       'quantity' => '2',
       'unit_price' => new Price('2', 'USD'),
       'state' => 'trial',
-      'trial_starts' => strtotime('2017-02-24 17:30:00'),
+      'trial_starts' => strtotime('2019-02-05 17:30:00'),
     ]);
     $trial_subscription->save();
     $this->trialSubscription = $this->reloadEntity($trial_subscription);
@@ -71,7 +71,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
       'quantity' => '2',
       'unit_price' => new Price('2', 'USD'),
       'state' => 'active',
-      'starts' => strtotime('2017-02-24 17:30:00'),
+      'starts' => strtotime('2019-02-15 00:00:00'),
     ]);
     $active_subscription->save();
     $this->activeSubscription = $this->reloadEntity($active_subscription);
@@ -151,6 +151,8 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $billing_period = $billing_period_item->toBillingPeriod();
 
     $this->assertEquals($expected_billing_period, $billing_period);
+    // Confirm that the current billing period is 28 days long.
+    $this->assertEquals(2419200, $billing_period->getDuration());
     $this->assertTrue($this->activeSubscription->hasOrder($order));
     $this->assertEmpty($this->activeSubscription->getRenewedTime());
     $this->assertOrder($order, $this->activeSubscription);
@@ -167,9 +169,8 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     // The subscription was created mid-cycle, the unit price should be
     // half the usual due to proration.
     $this->assertEquals($this->activeSubscription->getUnitPrice()->divide('2'), $order_item->getUnitPrice());
-    $this->assertEquals(new DrupalDateTime('2017-02-24 17:30:00'), $order_item_billing_period->getStartDate());
+    $this->assertEquals($this->activeSubscription->getStartDate(), $order_item_billing_period->getStartDate());
     $this->assertEquals($billing_period->getEndDate(), $order_item_billing_period->getEndDate());
-    $this->assertEquals(3600, $billing_period->getDuration());
     $this->assertEquals($this->activeSubscription->id(), $order_item->get('subscription')->target_id);
   }
 
@@ -272,7 +273,8 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->assertEquals($this->activeSubscription->getUnitPrice(), $order_item->getUnitPrice());
     $this->assertEquals($this->variation, $order_item->getPurchasedEntity());
     $this->assertEquals($next_billing_period, $order_item->get('billing_period')->first()->toBillingPeriod());
-    $this->assertEquals(3600, $next_billing_period->getDuration());
+    // Confirm that the next billing period (March) is 31 days long.
+    $this->assertEquals(2678400, $next_billing_period->getDuration());
     $this->assertEquals($this->activeSubscription->id(), $order_item->get('subscription')->target_id);
 
     // Confirm that no renewal occurs for canceled subscriptions.

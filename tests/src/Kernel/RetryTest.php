@@ -63,13 +63,13 @@ class RetryTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'active',
-      'starts' => strtotime('2017-02-24 17:00'),
+      'starts' => strtotime('2019-02-24 17:00'),
     ]);
     $subscription->save();
     $order = $this->recurringOrderManager->startRecurring($subscription);
 
     // Rewind time to the end of the first subscription.
-    $this->rewindTime(strtotime('2017-02-24 19:00'));
+    $this->rewindTime(strtotime('2019-03-01 00:00'));
     $job = Job::create('commerce_recurring_order_close', [
       'order_id' => $order->id(),
     ]);
@@ -91,10 +91,10 @@ class RetryTest extends RecurringKernelTestBase {
     // Confirm that the job was re-queued.
     $this->assertEquals(1, $job->getNumRetries());
     $this->assertEquals(Job::STATE_QUEUED, $job->getState());
-    $this->assertEquals(strtotime('2017-02-25 19:00'), $job->getAvailableTime());
+    $this->assertEquals(strtotime('2019-03-02 00:00'), $job->getAvailableTime());
 
     // Run the first retry.
-    $this->rewindTime(strtotime('2017-02-25 19:00'));
+    $this->rewindTime(strtotime('2019-03-02 00:00'));
     $job = $this->queue->getBackend()->claimJob();
     $result = $processor->processJob($job, $this->queue);
 
@@ -105,10 +105,10 @@ class RetryTest extends RecurringKernelTestBase {
     // Confirm that the job was re-queued.
     $this->assertEquals(2, $job->getNumRetries());
     $this->assertEquals(Job::STATE_QUEUED, $job->getState());
-    $this->assertEquals(strtotime('2017-02-28 19:00'), $job->getAvailableTime());
+    $this->assertEquals(strtotime('2019-03-05 00:00'), $job->getAvailableTime());
 
     // Run the second retry.
-    $this->rewindTime(strtotime('2017-02-28 19:00'));
+    $this->rewindTime(strtotime('2019-03-05 00:00'));
     $job = $this->queue->getBackend()->claimJob();
     $result = $processor->processJob($job, $this->queue);
 
@@ -119,10 +119,10 @@ class RetryTest extends RecurringKernelTestBase {
     // Confirm that the job was re-queued.
     $this->assertEquals(3, $job->getNumRetries());
     $this->assertEquals(Job::STATE_QUEUED, $job->getState());
-    $this->assertEquals(strtotime('2017-03-05 19:00'), $job->getAvailableTime());
+    $this->assertEquals(strtotime('2019-03-10 00:00'), $job->getAvailableTime());
 
     // Run the last retry.
-    $this->rewindTime(strtotime('2017-03-05 19:00'));
+    $this->rewindTime(strtotime('2019-03-10 00:00'));
     $job = $this->queue->getBackend()->claimJob();
     $result = $processor->processJob($job, $this->queue);
 
@@ -161,14 +161,14 @@ class RetryTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'active',
-      'starts' => strtotime('2017-02-24 17:00'),
+      'starts' => strtotime('2019-02-24 17:00'),
       'payment_method' => $payment_method,
     ]);
     $subscription->save();
     $order = $this->recurringOrderManager->startRecurring($subscription);
 
     // Rewind time to the end of the first subscription.
-    $this->rewindTime(strtotime('2017-02-24 19:00'));
+    $this->rewindTime(strtotime('2019-03-01 00:00'));
     $job = Job::create('commerce_recurring_order_close', [
       'order_id' => $order->id(),
     ]);

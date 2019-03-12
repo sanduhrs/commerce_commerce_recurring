@@ -20,16 +20,16 @@ class BillingPeriodTest extends KernelTestBase {
    * @covers ::contains
    */
   public function testBillingPeriod() {
-    $start_date = new DrupalDateTime('2017-01-01 00:00:00');
-    $end_date = new DrupalDateTime('2017-01-02 00:00:00');
+    $start_date = new DrupalDateTime('2019-01-01 00:00:00');
+    $end_date = new DrupalDateTime('2019-01-02 00:00:00');
     $billing_period = new BillingPeriod($start_date, $end_date);
 
     $this->assertEquals($start_date, $billing_period->getStartDate());
     $this->assertEquals($end_date, $billing_period->getEndDate());
     $this->assertEquals(86400, $billing_period->getDuration());
 
-    $contained_date = new DrupalDateTime('2017-01-01 11:00:00');
-    $not_contained_date = new DrupalDateTime('2017-01-03 00:00:00');
+    $contained_date = new DrupalDateTime('2019-01-01 11:00:00');
+    $not_contained_date = new DrupalDateTime('2019-01-03 00:00:00');
     $this->assertTrue($billing_period->contains($contained_date));
     $this->assertFalse($billing_period->contains($not_contained_date));
   }

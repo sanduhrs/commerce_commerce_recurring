@@ -99,12 +99,12 @@ abstract class RecurringKernelTestBase extends CommerceKernelTestBase {
       'plugin' => 'fixed',
       'configuration' => [
         'trial_interval' => [
-          'number' => '1',
-          'unit' => 'hour',
+          'number' => '10',
+          'unit' => 'day',
         ],
         'interval' => [
           'number' => '1',
-          'unit' => 'hour',
+          'unit' => 'month',
         ],
       ],
     ]);

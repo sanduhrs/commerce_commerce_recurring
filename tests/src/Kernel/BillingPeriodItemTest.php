@@ -54,8 +54,8 @@ class BillingPeriodItemTest extends KernelTestBase {
    * Tests the field.
    */
   public function testField() {
-    $start_date = new DrupalDateTime('2017-10-19 15:07:12');
-    $end_date = new DrupalDateTime('2017-11-19 15:07:12');
+    $start_date = new DrupalDateTime('2019-10-19 15:07:12');
+    $end_date = new DrupalDateTime('2019-11-19 15:07:12');
 
     $entity = EntityTest::create([
       'field_billing_period' => [
@@ -77,7 +77,7 @@ class BillingPeriodItemTest extends KernelTestBase {
     $this->assertEquals($end_date, $billing_period->getEndDate());
 
     // Test passing billing periods.
-    $new_end_date = new DrupalDateTime('2017-12-19 15:07:12');
+    $new_end_date = new DrupalDateTime('2019-12-19 15:07:12');
     $billing_period = new BillingPeriod($end_date, $new_end_date);
     $entity->set('field_billing_period', $billing_period);
     /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $billing_period_field */

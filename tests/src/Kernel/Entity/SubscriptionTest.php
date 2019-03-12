@@ -93,11 +93,11 @@ class SubscriptionTest extends RecurringKernelTestBase {
       'quantity' => 2,
       'unit_price' => new Price('2', 'USD'),
       'state' => 'pending',
-      'created' => 1507642328,
-      'trial_starts' => 1507642328 + 10,
-      'trial_ends' => 1507642328 + 50,
-      'starts' => 1507642328 + 10,
-      'ends' => 1507642328 + 50,
+      'created' => 1550250000,
+      'trial_starts' => 1550250000 + 10,
+      'trial_ends' => 1550250000 + 50,
+      'starts' => 1550250000 + 10,
+      'ends' => 1550250000 + 50,
     ]);
     $subscription->save();
 
@@ -137,8 +137,8 @@ class SubscriptionTest extends RecurringKernelTestBase {
     $this->assertEquals($initial_order, $subscription->getInitialOrder());
     $this->assertEquals($initial_order->id(), $subscription->getInitialOrderId());
 
-    $start_date = new DrupalDateTime('2017-10-19 15:07:12');
-    $end_date = new DrupalDateTime('2017-11-19 15:07:12');
+    $start_date = new DrupalDateTime('2019-10-19 15:07:12');
+    $end_date = new DrupalDateTime('2019-11-19 15:07:12');
     /** @var \Drupal\commerce_recurring\BillingPeriod $billing_period */
     $billing_period = new BillingPeriod($start_date, $end_date);
 
@@ -175,7 +175,7 @@ class SubscriptionTest extends RecurringKernelTestBase {
     $this->assertEquals($order, $subscription->getCurrentOrder());
     $this->assertEquals($billing_period, $subscription->getCurrentBillingPeriod());
 
-    $new_end_date = new DrupalDateTime('2017-12-19 15:07:12');
+    $new_end_date = new DrupalDateTime('2019-12-19 15:07:12');
     /** @var \Drupal\commerce_recurring\BillingPeriod $new_billing_period */
     $new_billing_period = new BillingPeriod($end_date, $new_end_date);
 
@@ -193,7 +193,7 @@ class SubscriptionTest extends RecurringKernelTestBase {
     $this->assertEquals($second_order, $subscription->getCurrentOrder());
     $this->assertEquals($new_billing_period, $subscription->getCurrentBillingPeriod());
 
-    $this->assertEquals(1507642328, $subscription->getCreatedTime());
+    $this->assertEquals(1550250000, $subscription->getCreatedTime());
     $subscription->setCreatedTime(1508002101);
     $this->assertEquals(1508002101, $subscription->getCreatedTime());
 
@@ -201,19 +201,19 @@ class SubscriptionTest extends RecurringKernelTestBase {
     $subscription->setRenewedTime(123456);
     $this->assertEquals(123456, $subscription->getRenewedTime());
 
-    $this->assertEquals(1507642328 + 10, $subscription->getTrialStartTime());
+    $this->assertEquals(1550250000 + 10, $subscription->getTrialStartTime());
     $subscription->setTrialStartTime(1508002120);
     $this->assertEquals(1508002120, $subscription->getTrialStartTime());
 
-    $this->assertEquals(1507642328 + 50, $subscription->getTrialEndTime());
+    $this->assertEquals(1550250000 + 50, $subscription->getTrialEndTime());
     $subscription->setTrialEndTime(1508002920);
     $this->assertEquals(1508002920, $subscription->getTrialEndTime());
 
-    $this->assertEquals(1507642328 + 10, $subscription->getStartTime());
+    $this->assertEquals(1550250000 + 10, $subscription->getStartTime());
     $subscription->setStartTime(1508002120);
     $this->assertEquals(1508002120, $subscription->getStartTime());
 
-    $this->assertEquals(1507642328 + 50, $subscription->getEndTime());
+    $this->assertEquals(1550250000 + 50, $subscription->getEndTime());
     $subscription->setEndTime(1508002920);
     $this->assertEquals(1508002920, $subscription->getEndTime());
 
@@ -264,8 +264,8 @@ class SubscriptionTest extends RecurringKernelTestBase {
   public function testTrialTimestamps() {
     $configuration = $this->billingSchedule->getPluginConfiguration();
     $configuration['trial_interval'] = [
-      'number' => $configuration['interval']['number'],
-      'unit' => $configuration['interval']['unit'],
+      'number' => '1',
+      'unit' => 'hour',
     ];
     $this->billingSchedule->setPluginConfiguration($configuration);
     $this->billingSchedule->save();
@@ -281,14 +281,13 @@ class SubscriptionTest extends RecurringKernelTestBase {
       'quantity' => 2,
       'unit_price' => new Price('2', 'USD'),
       'state' => 'trial',
-      'created' => 1507642328,
-      'trial_starts' => 1507642328,
+      'trial_starts' => 1550250000,
     ]);
     $trial_subscription->save();
 
-    $this->assertEquals(1507642328, $trial_subscription->getTrialStartTime());
-    $this->assertEquals(1507642328 + 3600, $trial_subscription->getTrialEndTime());
-    $this->assertEquals(1507642328 + 3600, $trial_subscription->getStartTime());
+    $this->assertEquals(1550250000, $trial_subscription->getTrialStartTime());
+    $this->assertEquals(1550250000 + 3600, $trial_subscription->getTrialEndTime());
+    $this->assertEquals(1550250000 + 3600, $trial_subscription->getStartTime());
   }
 
 }

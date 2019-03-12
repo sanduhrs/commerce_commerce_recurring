@@ -1,10 +1,11 @@
 <?php
 
-namespace Drupal\Tests\commerce_recurring\Kernel;
+namespace Drupal\Tests\commerce_recurring\Kernel\AdvancedQueue\JobType;
 
 use Drupal\advancedqueue\Job;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\Entity\Subscription;
+use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
 
 /**
  * @coversDefaultClass \Drupal\commerce_recurring\Plugin\AdvancedQueue\JobType\SubscriptionActivate
@@ -52,7 +53,7 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'active',
-      'starts' => strtotime('2017-02-24 17:00'),
+      'starts' => strtotime('2019-02-24 17:00'),
     ]);
     $subscription->save();
 
@@ -78,7 +79,7 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'pending',
-      'starts' => strtotime('2017-02-24 17:00'),
+      'starts' => strtotime('2019-02-01 00:00'),
     ]);
     $subscription->save();
 
@@ -107,9 +108,9 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('3', 'USD'),
       'state' => 'trial',
-      'trial_starts' => strtotime('2017-02-24 17:00'),
-      'trial_ends' => strtotime('2017-02-24 18:00'),
-      'starts' => strtotime('2017-02-24 18:00'),
+      'trial_starts' => strtotime('2019-02-01 00:00'),
+      'trial_ends' => strtotime('2019-02-10 00:00'),
+      'starts' => strtotime('2019-02-10 00:00'),
     ]);
     $subscription->save();
     $this->recurringOrderManager->startTrial($subscription);
@@ -129,7 +130,8 @@ class SubscriptionActivateTest extends RecurringKernelTestBase {
     // One order for the trial period, one for the first billing period.
     $this->assertCount(2, $subscription->getOrders());
     $order = $subscription->getOrders()[1];
-    $this->assertEquals(new Price('3', 'USD'), $order->getTotalPrice());
+    // Prorated price for the Feb 10th - Mar 1st period.
+    $this->assertEquals(new Price('2.04', 'USD'), $order->getTotalPrice());
   }
 
 }

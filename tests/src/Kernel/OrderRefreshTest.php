@@ -42,7 +42,7 @@ class OrderRefreshTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'active',
-      'starts' => strtotime('2017-02-24 17:00'),
+      'starts' => strtotime('2019-02-01 00:00'),
     ]);
     $subscription->save();
     $order = $this->recurringOrderManager->startRecurring($subscription);

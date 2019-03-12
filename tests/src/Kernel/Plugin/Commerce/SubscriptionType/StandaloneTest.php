@@ -3,6 +3,7 @@
 namespace Drupal\Tests\commerce_recurring\Kernel\Plugin\Commerce\SubscriptionType;
 
 use Drupal\commerce_price\Price;
+use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\commerce_recurring\Charge;
 use Drupal\commerce_recurring\Entity\Subscription;
 use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
@@ -42,11 +43,13 @@ class StandaloneTest extends RecurringKernelTestBase {
       'title' => 'My donation',
       'quantity' => 1,
       'unit_price' => new Price('19', 'USD'),
-      'starts' => strtotime('2017-02-24 17:00:00'),
+      'starts' => strtotime('2019-02-24 17:00:00'),
     ]);
     $subscription->save();
     $start_date = $subscription->getStartDate();
     $billing_period = $this->billingSchedule->getPlugin()->generateFirstBillingPeriod($start_date);
+    // The billing schedule is fixed, the first period starts before the charge.
+    $expected_billing_period = new BillingPeriod($subscription->getStartDate(), $billing_period->getEndDate());
 
     $charges = $subscription->getType()->collectCharges($subscription, $billing_period);
     $this->assertCount(1, $charges);
@@ -56,7 +59,7 @@ class StandaloneTest extends RecurringKernelTestBase {
     $this->assertEquals($subscription->getTitle(), $base_charge->getTitle());
     $this->assertEquals($subscription->getQuantity(), $base_charge->getQuantity());
     $this->assertEquals($subscription->getUnitPrice(), $base_charge->getUnitPrice());
-    $this->assertEquals($billing_period, $base_charge->getBillingPeriod());
+    $this->assertEquals($expected_billing_period, $base_charge->getBillingPeriod());
   }
 
 }

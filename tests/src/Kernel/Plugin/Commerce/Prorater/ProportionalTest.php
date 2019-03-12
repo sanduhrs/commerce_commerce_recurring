@@ -48,12 +48,12 @@ class ProportionalTest extends RecurringKernelTestBase {
     ]);
     $order_item->save();
     $full_period = new BillingPeriod(
-      new DrupalDateTime('2017-06-01 17:00:00'),
-      new DrupalDateTime('2017-06-01 18:00:00')
+      new DrupalDateTime('2019-06-01 17:00:00'),
+      new DrupalDateTime('2019-06-01 18:00:00')
     );
     $partial_period = new BillingPeriod(
       new DrupalDateTime($partial_period_start_time),
-      new DrupalDateTime('2017-06-01 18:00:00')
+      new DrupalDateTime('2019-06-01 18:00:00')
     );
     $prorated_unit_price = $plugin->prorateOrderItem($order_item, $partial_period, $full_period);
     $this->assertEquals($expected_price, $prorated_unit_price);
@@ -66,15 +66,15 @@ class ProportionalTest extends RecurringKernelTestBase {
     return [
       'full hour, full price' => [
         new Price('30', 'USD'),
-        '2017-06-01 17:00:00',
+        '2019-06-01 17:00:00',
       ],
       'half hour, half price' => [
         new Price('15', 'USD'),
-        '2017-06-01 17:30:00',
+        '2019-06-01 17:30:00',
       ],
       'partial half-hour, rounded' => [
         new Price('12.11', 'USD'),
-        '2017-06-01 17:35:47',
+        '2019-06-01 17:35:47',
       ],
     ];
   }

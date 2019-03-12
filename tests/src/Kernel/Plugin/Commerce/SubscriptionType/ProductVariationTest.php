@@ -34,14 +34,6 @@ class ProductVariationTest extends RecurringKernelTestBase {
    * @covers ::collectTrialCharges
    */
   public function testTrialCharges() {
-    $configuration = $this->billingSchedule->getPluginConfiguration();
-    $configuration['trial_interval'] = [
-      'number' => $configuration['interval']['number'],
-      'unit' => $configuration['interval']['unit'],
-    ];
-    $this->billingSchedule->setPluginConfiguration($configuration);
-    $this->billingSchedule->save();
-
     $subscription = Subscription::create([
       'type' => 'product_variation',
       'store_id' => $this->store->id(),
@@ -52,7 +44,7 @@ class ProductVariationTest extends RecurringKernelTestBase {
       'quantity' => 2,
       'unit_price' => new Price('49.99', 'USD'),
       'state' => 'trial',
-      'trial_starts' => strtotime('2017-02-24 17:30:00'),
+      'trial_starts' => strtotime('2019-02-24 17:30:00'),
     ]);
     $subscription->save();
     $trial_period = new BillingPeriod($subscription->getTrialStartDate(), $subscription->getTrialEndDate());
@@ -100,7 +92,7 @@ class ProductVariationTest extends RecurringKernelTestBase {
       'quantity' => 2,
       'unit_price' => new Price('49.99', 'USD'),
       'state' => 'active',
-      'starts' => strtotime('2017-02-24 17:30:00'),
+      'starts' => strtotime('2019-02-24 17:30:00'),
     ]);
     $subscription->save();
     $start_date = $subscription->getStartDate();
@@ -145,8 +137,8 @@ class ProductVariationTest extends RecurringKernelTestBase {
       'title' => 'My subscription',
       'quantity' => 2,
       'unit_price' => new Price('49.99', 'USD'),
-      'starts' => strtotime('2017-02-24 17:30:00'),
-      'ends' => strtotime('2017-02-24 17:45:00'),
+      'starts' => strtotime('2019-02-24 17:30:00'),
+      'ends' => strtotime('2019-02-24 17:45:00'),
     ]);
     $subscription->save();
     $start_date = $subscription->getStartDate();

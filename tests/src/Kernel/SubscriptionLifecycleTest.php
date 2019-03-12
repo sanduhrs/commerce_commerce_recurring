@@ -178,7 +178,7 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
     $this->assertEquals($initial_order->id(), $subscription->getInitialOrderId());
     $this->assertNotEmpty($subscription->getTrialStartTime());
     $this->assertNotEmpty($subscription->getTrialEndTime());
-    $this->assertEquals(3600, $subscription->getTrialEndTime() - $subscription->getTrialStartTime());
+    $this->assertEquals(864000, $subscription->getTrialEndTime() - $subscription->getTrialStartTime());
     $orders = $subscription->getOrders();
     $this->assertCount(1, $orders);
     $order = reset($orders);

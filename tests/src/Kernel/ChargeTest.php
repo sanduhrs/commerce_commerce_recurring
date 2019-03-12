@@ -36,8 +36,8 @@ class ChargeTest extends KernelTestBase {
       'title' => 'My subscription',
       'unit_price' => new Price('99.99', 'USD'),
       'billing_period' => new BillingPeriod(
-        DrupalDateTime::createFromFormat('Y-m-d', '2017-01-01'),
-        DrupalDateTime::createFromFormat('Y-m-d', '2017-01-31')
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-01-01'),
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-01-31')
       ),
     ]);
   }
@@ -51,8 +51,8 @@ class ChargeTest extends KernelTestBase {
       'title' => 'My subscription',
       'unit_price' => 'INVALID',
       'billing_period' => new BillingPeriod(
-        DrupalDateTime::createFromFormat('Y-m-d', '2017-01-01'),
-        DrupalDateTime::createFromFormat('Y-m-d', '2017-01-31')
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-01-01'),
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-01-31')
       ),
     ]);
   }
@@ -79,8 +79,8 @@ class ChargeTest extends KernelTestBase {
   public function testCharge() {
     $purchased_entity = $this->prophesize(PurchasableEntityInterface::class)->reveal();
     $billing_period = new BillingPeriod(
-      new DrupalDateTime('2017-01-01 00:00:00'),
-      new DrupalDateTime('2017-02-01 00:00:00')
+      new DrupalDateTime('2019-01-01 00:00:00'),
+      new DrupalDateTime('2019-02-01 00:00:00')
     );
     $charge = new Charge([
       'purchased_entity' => $purchased_entity,

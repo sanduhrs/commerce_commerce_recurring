@@ -44,24 +44,24 @@ class CronTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'trial',
-      'trial_starts' => strtotime('2017-02-24 17:00'),
-      'trial_ends' => strtotime('2017-02-24 18:00'),
-      'starts' => strtotime('2017-02-24 18:00'),
+      'trial_starts' => strtotime('2019-02-05 17:00'),
+      'trial_ends' => strtotime('2019-02-15 17:00'),
+      'starts' => strtotime('2019-02-15 17:00'),
     ]);
     $subscription->save();
     $order = $this->recurringOrderManager->startTrial($subscription);
 
     // Confirm that no jobs were scheduled while the trial was still ongoing.
-    $this->rewindTime(strtotime('2017-02-24 17:30'));
+    $this->rewindTime(strtotime('2019-02-10 17:00'));
     $this->container->get('commerce_recurring.cron')->run();
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
     $queue = Queue::load('commerce_recurring');
     $counts = array_filter($queue->getBackend()->countJobs());
     $this->assertEmpty($counts);
 
-    // Confirm that the order was scheduled for closing (but not renewal),
+    // Confirm that the trial order was scheduled for closing (but not renewal),
     // and that the subscription was scheduled for activation.
-    $this->rewindTime(strtotime('2017-02-24 18:00'));
+    $this->rewindTime(strtotime('2019-02-15 17:00'));
     $this->container->get('commerce_recurring.cron')->run();
     $this->container->get('entity_type.manager')->getStorage('advancedqueue_queue')->resetCache();
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
@@ -90,19 +90,19 @@ class CronTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'trial',
-      'trial_starts' => strtotime('2017-02-24 17:00'),
-      'trial_ends' => strtotime('2017-02-24 18:00'),
-      'starts' => strtotime('2017-02-24 18:00'),
+      'trial_starts' => strtotime('2019-02-05 17:00'),
+      'trial_ends' => strtotime('2019-02-15 17:00'),
+      'starts' => strtotime('2019-02-15 17:00'),
     ]);
     $postpaid_subscription->save();
     $postpaid_order = $this->recurringOrderManager->startTrial($postpaid_subscription);
-    // Cancel the subscription half-way through.
-    $this->rewindTime(strtotime('2017-02-24 17:00'));
+    // Cancel the subscription half-way through the trial.
+    $this->rewindTime(strtotime('2019-02-10 17:00'));
     $postpaid_subscription->cancel(FALSE);
     $postpaid_subscription->save();
 
-    // Confirm that the order is scheduling for closing.
-    $this->rewindTime(strtotime('2017-02-24 18:00'));
+    // Confirm that the trial order is scheduling for closing.
+    $this->rewindTime(strtotime('2019-02-15 17:00'));
     $this->container->get('commerce_recurring.cron')->run();
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
     $queue = Queue::load('commerce_recurring');
@@ -128,9 +128,9 @@ class CronTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'trial',
-      'trial_starts' => strtotime('2017-02-24 17:00'),
-      'trial_ends' => strtotime('2017-02-24 18:00'),
-      'starts' => strtotime('2017-02-24 18:00'),
+      'trial_starts' => strtotime('2019-02-05 17:00'),
+      'trial_ends' => strtotime('2019-02-15 17:00'),
+      'starts' => strtotime('2019-02-15 17:00'),
     ]);
     $prepaid_subscription->save();
     $prepaid_order = $this->recurringOrderManager->startTrial($prepaid_subscription);
@@ -162,13 +162,13 @@ class CronTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'active',
-      'starts' => strtotime('2017-02-24 17:00'),
+      'starts' => strtotime('2019-02-15 00:00'),
     ]);
     $subscription->save();
     $order = $this->recurringOrderManager->startRecurring($subscription);
 
     // Confirm that no jobs were scheduled before the end of the billing period.
-    $this->rewindTime(strtotime('2017-02-24 16:30'));
+    $this->rewindTime(strtotime('2019-02-24 17:00'));
     $this->container->get('commerce_recurring.cron')->run();
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
     $queue = Queue::load('commerce_recurring');
@@ -176,7 +176,7 @@ class CronTest extends RecurringKernelTestBase {
     $this->assertEmpty($counts);
 
     // Confirm that the order was scheduled for closing and renewal.
-    $this->rewindTime(strtotime('2017-02-24 18:00'));
+    $this->rewindTime(strtotime('2019-03-01 00:00'));
     $this->container->get('commerce_recurring.cron')->run();
     $this->container->get('entity_type.manager')->getStorage('advancedqueue_queue')->resetCache();
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
@@ -205,17 +205,17 @@ class CronTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'active',
-      'starts' => strtotime('2017-02-24 17:00'),
+      'starts' => strtotime('2019-02-15 00:00'),
     ]);
     $postpaid_subscription->save();
     $postpaid_order = $this->recurringOrderManager->startRecurring($postpaid_subscription);
     // Cancel the subscription half-way through.
-    $this->rewindTime(strtotime('2017-02-24 17:00'));
+    $this->rewindTime(strtotime('2019-02-21 00:00'));
     $postpaid_subscription->cancel(FALSE);
     $postpaid_subscription->save();
 
     // Confirm that the order is scheduling for closing, but not renewal.
-    $this->rewindTime(strtotime('2017-02-24 18:00'));
+    $this->rewindTime(strtotime('2019-03-01 00:00'));
     $this->container->get('commerce_recurring.cron')->run();
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
     $queue = Queue::load('commerce_recurring');
@@ -241,7 +241,7 @@ class CronTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'active',
-      'starts' => strtotime('2017-02-24 17:00'),
+      'starts' => strtotime('2019-02-15 00:00'),
     ]);
     $prepaid_subscription->save();
     $prepaid_order = $this->recurringOrderManager->startRecurring($prepaid_subscription);
@@ -275,11 +275,11 @@ class CronTest extends RecurringKernelTestBase {
       'title' => $this->variation->getOrderItemTitle(),
       'unit_price' => new Price('2', 'USD'),
       'state' => 'pending',
-      'starts' => strtotime('2017-02-24 17:00'),
+      'starts' => strtotime('2019-02-15 17:00'),
     ]);
     $subscription->save();
 
-    $this->rewindTime(strtotime('2017-02-24 19:00'));
+    $this->rewindTime(strtotime('2019-02-15 19:00'));
     $this->container->get('commerce_recurring.cron')->run();
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
     $queue = Queue::load('commerce_recurring');
