@@ -59,14 +59,12 @@ class Proportional extends ProraterBase implements ContainerFactoryPluginInterfa
   /**
    * {@inheritdoc}
    */
-  public function prorateOrderItem(OrderItemInterface $order_item, BillingPeriod $partial_period, BillingPeriod $period) {
-    $duration = $period->getDuration();
-    $partial_duration = $partial_period->getDuration();
+  public function prorateOrderItem(OrderItemInterface $order_item, BillingPeriod $billing_period, BillingPeriod $full_billing_period) {
+    $duration = $billing_period->getDuration();
+    $full_duration = $full_billing_period->getDuration();
     $price = $order_item->getUnitPrice();
-    if ($duration != $partial_duration) {
-      $price = $price->multiply(Calculator::divide($partial_duration, $duration));
-      $price = $this->rounder->round($price);
-    }
+    $price = $price->multiply(Calculator::divide($duration, $full_duration));
+    $price = $this->rounder->round($price);
 
     return $price;
   }

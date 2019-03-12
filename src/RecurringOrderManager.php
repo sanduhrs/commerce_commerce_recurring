@@ -286,9 +286,11 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
       $order_item->set('billing_period', $charge->getBillingPeriod());
       // Populate the initial unit price, then prorate it.
       $order_item->setUnitPrice($charge->getUnitPrice());
-      $prorater = $subscription->getBillingSchedule()->getProrater();
-      $prorated_unit_price = $prorater->prorateOrderItem($order_item, $charge->getBillingPeriod(), $billing_period);
-      $order_item->setUnitPrice($prorated_unit_price, TRUE);
+      if ($charge->needsProration()) {
+        $prorater = $subscription->getBillingSchedule()->getProrater();
+        $prorated_unit_price = $prorater->prorateOrderItem($order_item, $charge->getBillingPeriod(), $charge->getFullBillingPeriod());
+        $order_item->setUnitPrice($prorated_unit_price, TRUE);
+      }
       // Avoid setting unsaved order items for now, to avoid #3017259.
       if ($order_item->isNew()) {
         $order_item->save();

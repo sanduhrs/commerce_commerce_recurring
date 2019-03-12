@@ -50,13 +50,20 @@ final class Charge {
   protected $billingPeriod;
 
   /**
+   * The full billing period.
+   *
+   * @var \Drupal\commerce_recurring\BillingPeriod
+   */
+  protected $fullBillingPeriod;
+
+  /**
    * Constructs a new Charge object.
    *
    * @param array $definition
    *   The definition.
    */
   public function __construct(array $definition) {
-    foreach (['title', 'unit_price', 'billing_period'] as $required_property) {
+    foreach (['title', 'unit_price', 'billing_period', 'full_billing_period'] as $required_property) {
       if (empty($definition[$required_property])) {
         throw new \InvalidArgumentException(sprintf('Missing required property "%s".', $required_property));
       }
@@ -70,12 +77,16 @@ final class Charge {
     if (!$definition['billing_period'] instanceof BillingPeriod) {
       throw new \InvalidArgumentException(sprintf('The "billing_period" property must be an instance of %s.', BillingPeriod::class));
     }
+    if (!$definition['full_billing_period'] instanceof BillingPeriod) {
+      throw new \InvalidArgumentException(sprintf('The "full_billing_period" property must be an instance of %s.', BillingPeriod::class));
+    }
 
     $this->purchasedEntity = isset($definition['purchased_entity']) ? $definition['purchased_entity'] : NULL;
     $this->title = $definition['title'];
     $this->quantity = isset($definition['quantity']) ? $definition['quantity'] : '1';
     $this->unitPrice = $definition['unit_price'];
     $this->billingPeriod = $definition['billing_period'];
+    $this->fullBillingPeriod = $definition['full_billing_period'];
   }
 
   /**
@@ -129,6 +140,26 @@ final class Charge {
    */
   public function getBillingPeriod() {
     return $this->billingPeriod;
+  }
+
+  /**
+   * Gets the full billing period.
+   *
+   * @return \Drupal\commerce_recurring\BillingPeriod
+   *   The full billing period.
+   */
+  public function getFullBillingPeriod() {
+    return $this->fullBillingPeriod;
+  }
+
+  /**
+   * Gets whether the unit price needs to be prorated.
+   *
+   * @return bool
+   *   TRUE if the unit price needs to be prorated, FALSE otherwise.
+   */
+  public function needsProration() {
+    return $this->fullBillingPeriod->getDuration() != $this->billingPeriod->getDuration();
   }
 
 }

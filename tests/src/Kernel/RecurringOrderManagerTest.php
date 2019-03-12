@@ -9,6 +9,7 @@ use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\Subscription;
 use Drupal\commerce_recurring\Entity\SubscriptionInterface;
+use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
  * @coversDefaultClass \Drupal\commerce_recurring\RecurringOrderManager
@@ -52,9 +53,9 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
       'purchased_entity' => $this->variation,
       'title' => $this->variation->getOrderItemTitle(),
       'quantity' => '2',
-      'unit_price' => new Price('2', 'USD'),
+      'unit_price' => new Price('20', 'USD'),
       'state' => 'trial',
-      'trial_starts' => strtotime('2019-02-05 17:30:00'),
+      'trial_starts' => strtotime('2019-02-05 00:00'),
     ]);
     $trial_subscription->save();
     $this->trialSubscription = $this->reloadEntity($trial_subscription);
@@ -68,7 +69,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
       'purchased_entity' => $this->variation,
       'title' => $this->variation->getOrderItemTitle(),
       'quantity' => '2',
-      'unit_price' => new Price('2', 'USD'),
+      'unit_price' => new Price('20', 'USD'),
       'state' => 'active',
       'starts' => strtotime('2019-02-15 00:00:00'),
     ]);
@@ -103,9 +104,9 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
    * @covers ::startTrial
    * @covers ::collectSubscriptions
    */
-  public function testStartTrial() {
+  public function testStartTrialPostpaid() {
     $order = $this->recurringOrderManager->startTrial($this->trialSubscription);
-    $expected_billing_period = new BillingPeriod($this->trialSubscription->getTrialStartDate(), $this->trialSubscription->getTrialEndDate());
+    $expected_billing_period = new BillingPeriod(new DrupalDateTime('2019-02-05 00:00:00'), new DrupalDateTime('2019-02-15 00:00:00'));
     /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $billing_period_item */
     $billing_period_item = $order->get('billing_period')->first();
     $billing_period = $billing_period_item->toBillingPeriod();
@@ -117,16 +118,54 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->assertTrue($order->hasItems());
     $order_items = $order->getItems();
     $order_item = reset($order_items);
-    /** @var \Drupal\commerce_recurring\BillingPeriod $order_item_billing_period */
-    $order_item_billing_period = $order_item->get('billing_period')->first()->toBillingPeriod();
+    /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $order_item_billing_period_item */
+    $order_item_billing_period_item = $order_item->get('billing_period')->first();
+    $order_item_billing_period = $order_item_billing_period_item->toBillingPeriod();
 
     $this->assertEquals('recurring_product_variation', $order_item->bundle());
+    $this->assertEquals($this->trialSubscription->id(), $order_item->get('subscription')->target_id);
     $this->assertEquals($this->trialSubscription->getTitle(), $order_item->getTitle());
     $this->assertEquals($this->trialSubscription->getQuantity(), $order_item->getQuantity());
     $this->assertEquals($this->trialSubscription->getPurchasedEntityId(), $order_item->getPurchasedEntityId());
-    $this->assertTrue($order_item->getTotalPrice()->isZero());
     $this->assertEquals($billing_period, $order_item_billing_period);
+    $this->assertTrue($order_item->getTotalPrice()->isZero());
+  }
+
+  /**
+   * @covers ::startTrial
+   * @covers ::collectSubscriptions
+   */
+  public function testStartTrialPrepaid() {
+    $this->billingSchedule->setBillingType(BillingScheduleInterface::BILLING_TYPE_PREPAID);
+    $this->billingSchedule->save();
+
+    $order = $this->recurringOrderManager->startTrial($this->trialSubscription);
+    $expected_billing_period = new BillingPeriod(new DrupalDateTime('2019-02-05 00:00:00'), new DrupalDateTime('2019-02-15 00:00:00'));
+    /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $billing_period_item */
+    $billing_period_item = $order->get('billing_period')->first();
+    $billing_period = $billing_period_item->toBillingPeriod();
+
+    $this->assertEquals($expected_billing_period, $billing_period);
+    $this->assertTrue($this->trialSubscription->hasOrder($order));
+    $this->assertEmpty($this->trialSubscription->getRenewedTime());
+    $this->assertOrder($order, $this->trialSubscription);
+    $this->assertTrue($order->hasItems());
+    $order_items = $order->getItems();
+    $order_item = reset($order_items);
+    /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $order_item_billing_period_item */
+    $order_item_billing_period_item = $order_item->get('billing_period')->first();
+    $order_item_billing_period = $order_item_billing_period_item->toBillingPeriod();
+    $expected_order_item_billing_period = new BillingPeriod(new DrupalDateTime('2019-02-15 00:00:00'), new DrupalDateTime('2019-03-01 00:00'));
+
+    $this->assertEquals('recurring_product_variation', $order_item->bundle());
     $this->assertEquals($this->trialSubscription->id(), $order_item->get('subscription')->target_id);
+    $this->assertEquals($this->trialSubscription->getTitle(), $order_item->getTitle());
+    $this->assertEquals($this->trialSubscription->getQuantity(), $order_item->getQuantity());
+    $this->assertEquals($this->trialSubscription->getPurchasedEntityId(), $order_item->getPurchasedEntityId());
+    $this->assertEquals($expected_order_item_billing_period, $order_item_billing_period);
+    // The subscription started mid-cycle, the unit price should be
+    // half the usual due to proration.
+    $this->assertEquals($this->trialSubscription->getUnitPrice()->divide('2'), $order_item->getUnitPrice());
   }
 
   /**
@@ -141,10 +180,9 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
    * @covers ::startRecurring
    * @covers ::collectSubscriptions
    */
-  public function testStartRecurring() {
+  public function testStartRecurringPostpaid() {
     $order = $this->recurringOrderManager->startRecurring($this->activeSubscription);
-    $billing_schedule_plugin = $this->activeSubscription->getBillingSchedule()->getPlugin();
-    $expected_billing_period = $billing_schedule_plugin->generateFirstBillingPeriod($this->activeSubscription->getStartDate());
+    $expected_billing_period = new BillingPeriod(new DrupalDateTime('2019-02-01 00:00:00'), new DrupalDateTime('2019-03-01 00:00'));
     /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $billing_period_item */
     $billing_period_item = $order->get('billing_period')->first();
     $billing_period = $billing_period_item->toBillingPeriod();
@@ -159,18 +197,61 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $order_items = $order->getItems();
     $order_item = reset($order_items);
     /** @var \Drupal\commerce_recurring\BillingPeriod $order_item_billing_period */
-    $order_item_billing_period = $order_item->get('billing_period')->first()->toBillingPeriod();
+    /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $order_item_billing_period_item */
+    $order_item_billing_period_item = $order_item->get('billing_period')->first();
+    $order_item_billing_period = $order_item_billing_period_item->toBillingPeriod();
+    $expected_order_item_billing_period = new BillingPeriod(new DrupalDateTime('2019-02-15 00:00:00'), new DrupalDateTime('2019-03-01 00:00'));
 
     $this->assertEquals('recurring_product_variation', $order_item->bundle());
+    $this->assertEquals($this->activeSubscription->id(), $order_item->get('subscription')->target_id);
     $this->assertEquals($this->activeSubscription->getTitle(), $order_item->getTitle());
     $this->assertEquals($this->activeSubscription->getQuantity(), $order_item->getQuantity());
     $this->assertEquals($this->activeSubscription->getPurchasedEntityId(), $order_item->getPurchasedEntityId());
+    $this->assertEquals($expected_order_item_billing_period, $order_item_billing_period);
     // The subscription was created mid-cycle, the unit price should be
     // half the usual due to proration.
     $this->assertEquals($this->activeSubscription->getUnitPrice()->divide('2'), $order_item->getUnitPrice());
     $this->assertEquals($this->activeSubscription->getStartDate(), $order_item_billing_period->getStartDate());
     $this->assertEquals($billing_period->getEndDate(), $order_item_billing_period->getEndDate());
+  }
+
+  /**
+   * @covers ::startRecurring
+   * @covers ::collectSubscriptions
+   */
+  public function testStartRecurringPrepaid() {
+    $this->billingSchedule->setBillingType(BillingScheduleInterface::BILLING_TYPE_PREPAID);
+    $this->billingSchedule->save();
+
+    $order = $this->recurringOrderManager->startRecurring($this->activeSubscription);
+    $expected_billing_period = new BillingPeriod(new DrupalDateTime('2019-02-01 00:00:00'), new DrupalDateTime('2019-03-01 00:00'));
+    /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $billing_period_item */
+    $billing_period_item = $order->get('billing_period')->first();
+    $billing_period = $billing_period_item->toBillingPeriod();
+
+    $this->assertEquals($expected_billing_period, $billing_period);
+    // Confirm that the current billing period is 28 days long.
+    $this->assertEquals(2419200, $billing_period->getDuration());
+    $this->assertTrue($this->activeSubscription->hasOrder($order));
+    $this->assertEmpty($this->activeSubscription->getRenewedTime());
+    $this->assertOrder($order, $this->activeSubscription);
+    $this->assertTrue($order->hasItems());
+    $order_items = $order->getItems();
+    $order_item = reset($order_items);
+    /** @var \Drupal\commerce_recurring\Plugin\Field\FieldType\BillingPeriodItem $order_item_billing_period_item */
+    $order_item_billing_period_item = $order_item->get('billing_period')->first();
+    $order_item_billing_period = $order_item_billing_period_item->toBillingPeriod();
+    $expected_order_item_billing_period = new BillingPeriod(new DrupalDateTime('2019-03-01 00:00:00'), new DrupalDateTime('2019-04-01 00:00'));
+
+    $this->assertEquals('recurring_product_variation', $order_item->bundle());
     $this->assertEquals($this->activeSubscription->id(), $order_item->get('subscription')->target_id);
+    $this->assertEquals($this->activeSubscription->getTitle(), $order_item->getTitle());
+    $this->assertEquals($this->activeSubscription->getQuantity(), $order_item->getQuantity());
+    $this->assertEquals($this->activeSubscription->getPurchasedEntityId(), $order_item->getPurchasedEntityId());
+    $this->assertEquals($expected_order_item_billing_period, $order_item_billing_period);
+    // The order item is charging for the next billing period, the unit price
+    // should not be prorated.
+    $this->assertEquals($this->activeSubscription->getUnitPrice(), $order_item->getUnitPrice());
   }
 
   /**

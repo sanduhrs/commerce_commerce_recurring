@@ -33,14 +33,14 @@ interface ProraterInterface extends ConfigurablePluginInterface, PluginFormInter
    *
    * @param \Drupal\commerce_order\Entity\OrderItemInterface $order_item
    *   The order item.
-   * @param \Drupal\commerce_recurring\BillingPeriod $partial_period
-   *   The partial period.
-   * @param \Drupal\commerce_recurring\BillingPeriod $period
-   *   The full period.
+   * @param \Drupal\commerce_recurring\BillingPeriod $billing_period
+   *   The partial billing period.
+   * @param \Drupal\commerce_recurring\BillingPeriod $full_billing_period
+   *   The full billing period.
    *
    * @return \Drupal\commerce_price\Price
    *   The prorated price.
    */
-  public function prorateOrderItem(OrderItemInterface $order_item, BillingPeriod $partial_period, BillingPeriod $period);
+  public function prorateOrderItem(OrderItemInterface $order_item, BillingPeriod $billing_period, BillingPeriod $full_billing_period);
 
 }

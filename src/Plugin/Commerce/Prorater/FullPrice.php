@@ -18,7 +18,7 @@ class FullPrice extends ProraterBase implements ProraterInterface {
   /**
    * {@inheritdoc}
    */
-  public function prorateOrderItem(OrderItemInterface $order_item, BillingPeriod $partial_period, BillingPeriod $period) {
+  public function prorateOrderItem(OrderItemInterface $order_item, BillingPeriod $billing_period, BillingPeriod $full_billing_period) {
     return $order_item->getUnitPrice();
   }
 

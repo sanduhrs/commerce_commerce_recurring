@@ -89,14 +89,16 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
       // The base charge for prepaid subscriptions always covers the next
       // period, which in the case of trials is the first billing period.
       $base_unit_price = $subscription->getUnitPrice();
-      $base_billing_period = $billing_schedule->generateFirstBillingPeriod($start_date);
-      $base_billing_period = $this->adjustBillingPeriod($base_billing_period, $subscription);
+      $first_billing_period = $billing_schedule->generateFirstBillingPeriod($start_date);
+      $base_billing_period = $this->adjustBillingPeriod($first_billing_period, $subscription);
+      $full_billing_period = $first_billing_period;
     }
     else {
       // The base charge for postpaid subscriptions covers the current (trial)
       // period, which means that the plan needs to be free.
       $base_unit_price = $subscription->getUnitPrice()->multiply('0');
-      $base_billing_period = $trial_period;
+      $base_billing_period = $this->adjustTrialPeriod($trial_period, $subscription);
+      $full_billing_period = $trial_period;
     }
     $base_charge = new Charge([
       'purchased_entity' => $subscription->getPurchasedEntity(),
@@ -104,6 +106,7 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
       'quantity' => $subscription->getQuantity(),
       'unit_price' => $base_unit_price,
       'billing_period' => $base_billing_period,
+      'full_billing_period' => $full_billing_period,
     ]);
 
     return [$base_charge];
@@ -126,22 +129,51 @@ abstract class SubscriptionTypeBase extends PluginBase implements SubscriptionTy
       // The initial order (which starts the subscription) pays the first
       // billing period, so the base charge is always for the next one.
       // The October recurring order (ending on Nov 1st) charges for November.
-      $base_billing_period = $billing_schedule->generateNextBillingPeriod($start_date, $billing_period);
+      $next_billing_period = $billing_schedule->generateNextBillingPeriod($start_date, $billing_period);
+      $base_billing_period = $this->adjustBillingPeriod($next_billing_period, $subscription);
+      $full_billing_period = $next_billing_period;
     }
     else {
       // Postpaid means we're always charging for the current billing period.
       // The October recurring order (ending on Nov 1st) charges for October.
-      $base_billing_period = $billing_period;
+      $base_billing_period = $this->adjustBillingPeriod($billing_period, $subscription);
+      $full_billing_period = $billing_period;
     }
     $base_charge = new Charge([
       'purchased_entity' => $subscription->getPurchasedEntity(),
       'title' => $subscription->getTitle(),
       'quantity' => $subscription->getQuantity(),
       'unit_price' => $subscription->getUnitPrice(),
-      'billing_period' => $this->adjustBillingPeriod($base_billing_period, $subscription),
+      'billing_period' => $base_billing_period,
+      'full_billing_period' => $full_billing_period,
     ]);
 
     return [$base_charge];
+  }
+
+  /**
+   * Adjusts the trial period to reflect the trial end date.
+   *
+   * There is no need to adjust the start date because trial periods are
+   * always rolling.
+   *
+   * @param \Drupal\commerce_recurring\BillingPeriod $trial_period
+   *   The trial period.
+   * @param \Drupal\commerce_recurring\Entity\SubscriptionInterface $subscription
+   *   The subscription.
+   *
+   * @return \Drupal\commerce_recurring\BillingPeriod
+   *   The adjusted trial period.
+   */
+  protected function adjustTrialPeriod(BillingPeriod $trial_period, SubscriptionInterface $subscription) {
+    $trial_end_date = $subscription->getTrialEndDate();
+    $end_date = $trial_period->getEndDate();
+    if ($trial_end_date && $trial_period->contains($trial_end_date)) {
+      // The trial ended before the end of the trial period.
+      $end_date = $trial_end_date;
+    }
+
+    return new BillingPeriod($trial_period->getStartDate(), $end_date);
   }
 
   /**

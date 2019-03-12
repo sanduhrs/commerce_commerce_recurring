@@ -36,7 +36,7 @@ class ProportionalTest extends RecurringKernelTestBase {
    * @covers ::prorateOrderItem
    * @dataProvider testProratingProvider
    */
-  public function testProrating($expected_price, $partial_period_start_time) {
+  public function testProrating($expected_price, $billing_period_start_time) {
     /** @var \Drupal\commerce_recurring\Plugin\Commerce\Prorater\ProraterInterface $plugin */
     $plugin = $this->proraterManager->createInstance('proportional');
 
@@ -47,15 +47,15 @@ class ProportionalTest extends RecurringKernelTestBase {
       'unit_price' => new Price('30', 'USD'),
     ]);
     $order_item->save();
-    $full_period = new BillingPeriod(
+    $billing_period = new BillingPeriod(
+      new DrupalDateTime($billing_period_start_time),
+      new DrupalDateTime('2019-06-01 18:00:00')
+    );
+    $full_billing_period = new BillingPeriod(
       new DrupalDateTime('2019-06-01 17:00:00'),
       new DrupalDateTime('2019-06-01 18:00:00')
     );
-    $partial_period = new BillingPeriod(
-      new DrupalDateTime($partial_period_start_time),
-      new DrupalDateTime('2019-06-01 18:00:00')
-    );
-    $prorated_unit_price = $plugin->prorateOrderItem($order_item, $partial_period, $full_period);
+    $prorated_unit_price = $plugin->prorateOrderItem($order_item, $billing_period, $full_billing_period);
     $this->assertEquals($expected_price, $prorated_unit_price);
   }
 

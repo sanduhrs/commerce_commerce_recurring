@@ -37,7 +37,11 @@ class ChargeTest extends KernelTestBase {
       'unit_price' => new Price('99.99', 'USD'),
       'billing_period' => new BillingPeriod(
         DrupalDateTime::createFromFormat('Y-m-d', '2019-01-01'),
-        DrupalDateTime::createFromFormat('Y-m-d', '2019-01-31')
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-02-01')
+      ),
+      'full_billing_period' => new BillingPeriod(
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-01-01'),
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-02-01')
       ),
     ]);
   }
@@ -52,7 +56,11 @@ class ChargeTest extends KernelTestBase {
       'unit_price' => 'INVALID',
       'billing_period' => new BillingPeriod(
         DrupalDateTime::createFromFormat('Y-m-d', '2019-01-01'),
-        DrupalDateTime::createFromFormat('Y-m-d', '2019-01-31')
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-02-01')
+      ),
+      'full_billing_period' => new BillingPeriod(
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-01-01'),
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-02-01')
       ),
     ]);
   }
@@ -66,6 +74,26 @@ class ChargeTest extends KernelTestBase {
       'title' => 'My subscription',
       'unit_price' => new Price('99.99', 'USD'),
       'billing_period' => 'INVALID',
+      'full_billing_period' => new BillingPeriod(
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-01-01'),
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-02-01')
+      ),
+    ]);
+  }
+
+  /**
+   * @covers ::__construct
+   */
+  public function testInvalidFullBillingPeriod() {
+    $this->setExpectedException(\InvalidArgumentException::class, 'The "full_billing_period" property must be an instance of Drupal\commerce_recurring\BillingPeriod.');
+    $charge = new Charge([
+      'title' => 'My subscription',
+      'unit_price' => new Price('99.99', 'USD'),
+      'billing_period' => new BillingPeriod(
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-01-01'),
+        DrupalDateTime::createFromFormat('Y-m-d', '2019-02-01')
+      ),
+      'full_billing_period' => 'INVALID',
     ]);
   }
 
@@ -75,10 +103,16 @@ class ChargeTest extends KernelTestBase {
    * @covers ::getQuantity
    * @covers ::getUnitPrice
    * @covers ::getBillingPeriod
+   * @covers ::getFullBillingPeriod
+   * @covers ::needsProration
    */
   public function testCharge() {
     $purchased_entity = $this->prophesize(PurchasableEntityInterface::class)->reveal();
     $billing_period = new BillingPeriod(
+      new DrupalDateTime('2019-01-15 00:00:00'),
+      new DrupalDateTime('2019-02-01 00:00:00')
+    );
+    $full_billing_period = new BillingPeriod(
       new DrupalDateTime('2019-01-01 00:00:00'),
       new DrupalDateTime('2019-02-01 00:00:00')
     );
@@ -88,6 +122,7 @@ class ChargeTest extends KernelTestBase {
       'quantity' => '2',
       'unit_price' => new Price('99.99', 'USD'),
       'billing_period' => $billing_period,
+      'full_billing_period' => $full_billing_period,
     ]);
 
     $this->assertEquals($purchased_entity, $charge->getPurchasedEntity());
@@ -95,6 +130,18 @@ class ChargeTest extends KernelTestBase {
     $this->assertEquals('2', $charge->getQuantity());
     $this->assertEquals(new Price('99.99', 'USD'), $charge->getUnitPrice());
     $this->assertEquals($billing_period, $charge->getBillingPeriod());
+    $this->assertEquals($full_billing_period, $charge->getFullBillingPeriod());
+    $this->assertTrue($charge->needsProration());
+
+    $another_charge = new Charge([
+      'purchased_entity' => $purchased_entity,
+      'title' => 'My subscription',
+      'quantity' => '2',
+      'unit_price' => new Price('99.99', 'USD'),
+      'billing_period' => $full_billing_period,
+      'full_billing_period' => $full_billing_period,
+    ]);
+    $this->assertFalse($another_charge->needsProration());
   }
 
 }
