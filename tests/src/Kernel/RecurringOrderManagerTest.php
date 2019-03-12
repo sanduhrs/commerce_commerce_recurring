@@ -44,14 +44,6 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
   public function setUp() {
     parent::setUp();
 
-    $configuration = $this->billingSchedule->getPluginConfiguration();
-    $configuration['trial_interval'] = [
-      'number' => '1',
-      'unit' => 'hour',
-    ];
-    $this->billingSchedule->setPluginConfiguration($configuration);
-    $this->billingSchedule->save();
-
     $trial_subscription = Subscription::create([
       'type' => 'product_variation',
       'store_id' => $this->store->id(),
@@ -93,6 +85,19 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
   public function testStartTrialWithInvalidState() {
     $this->setExpectedException(\InvalidArgumentException::class, 'Unexpected subscription state "active".');
     $order = $this->recurringOrderManager->startTrial($this->activeSubscription);
+  }
+
+  /**
+   * @covers ::startTrial
+   */
+  public function testStartTrialWithInvalidBillingSchedule() {
+    $configuration = $this->billingSchedule->getPluginConfiguration();
+    unset($configuration['trial_interval']);
+    $this->billingSchedule->setPluginConfiguration($configuration);
+    $this->billingSchedule->save();
+
+    $this->setExpectedException(\InvalidArgumentException::class, 'The billing schedule "test_id" does not allow trials.');
+    $order = $this->recurringOrderManager->startTrial($this->trialSubscription);
   }
 
   /**

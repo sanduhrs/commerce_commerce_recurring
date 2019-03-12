@@ -40,6 +40,11 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
    * Canceling the initial order should cancel the subscription.
    */
   public function testLifecycle() {
+    $configuration = $this->billingSchedule->getPluginConfiguration();
+    unset($configuration['trial_interval']);
+    $this->billingSchedule->setPluginConfiguration($configuration);
+    $this->billingSchedule->save();
+
     $first_order_item = OrderItem::create([
       'type' => 'test',
       'title' => 'I promise not to start a subscription',
@@ -123,14 +128,6 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
    * Canceling the initial order should cancel the trial.
    */
   public function testLifecycleWithTrial() {
-    $configuration = $this->billingSchedule->getPluginConfiguration();
-    $configuration['trial_interval'] = [
-      'number' => '1',
-      'unit' => 'hour',
-    ];
-    $this->billingSchedule->setPluginConfiguration($configuration);
-    $this->billingSchedule->save();
-
     $first_order_item = OrderItem::create([
       'type' => 'test',
       'title' => 'I promise not to start a subscription',

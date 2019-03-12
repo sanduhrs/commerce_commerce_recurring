@@ -50,6 +50,10 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     if ($state != 'trial') {
       throw new \InvalidArgumentException(sprintf('Unexpected subscription state "%s".', $state));
     }
+    $billing_schedule = $subscription->getBillingSchedule();
+    if (!$billing_schedule->getPlugin()->allowTrials()) {
+      throw new \InvalidArgumentException(sprintf('The billing schedule "%s" does not allow trials.', $billing_schedule->id()));
+    }
 
     $start_date = $subscription->getTrialStartDate();
     $end_date = $subscription->getTrialEndDate();

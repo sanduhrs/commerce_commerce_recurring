@@ -16,6 +16,11 @@ class InitialOrderProcessorTest extends RecurringKernelTestBase {
    * @covers ::process
    */
   public function testPostpaidProcess() {
+    $configuration = $this->billingSchedule->getPluginConfiguration();
+    unset($configuration['trial_interval']);
+    $this->billingSchedule->setPluginConfiguration($configuration);
+    $this->billingSchedule->save();
+
     $order_item = OrderItem::create([
       'type' => 'default',
       'title' => $this->variation->getOrderItemTitle(),
@@ -51,6 +56,9 @@ class InitialOrderProcessorTest extends RecurringKernelTestBase {
    * @covers ::process
    */
   public function testPrepaidProcess() {
+    $configuration = $this->billingSchedule->getPluginConfiguration();
+    unset($configuration['trial_interval']);
+    $this->billingSchedule->setPluginConfiguration($configuration);
     $this->billingSchedule->setBillingType(BillingSchedule::BILLING_TYPE_PREPAID);
     $this->billingSchedule->save();
 
@@ -86,13 +94,6 @@ class InitialOrderProcessorTest extends RecurringKernelTestBase {
    * @covers ::process
    */
   public function testFreeTrial() {
-    $configuration = $this->billingSchedule->getPluginConfiguration();
-    $configuration['trial_interval'] = [
-      'number' => $configuration['interval']['number'],
-      'unit' => $configuration['interval']['unit'],
-    ];
-    $this->billingSchedule->setPluginConfiguration($configuration);
-    $this->billingSchedule->save();
     foreach ([BillingSchedule::BILLING_TYPE_PREPAID, BillingSchedule::BILLING_TYPE_POSTPAID] as $billing_type) {
       if ($this->billingSchedule->getBillingType() != $billing_type) {
         $this->billingSchedule->setBillingType(BillingSchedule::BILLING_TYPE_PREPAID);

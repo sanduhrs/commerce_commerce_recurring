@@ -98,6 +98,10 @@ abstract class RecurringKernelTestBase extends CommerceKernelTestBase {
       'billingType' => BillingSchedule::BILLING_TYPE_POSTPAID,
       'plugin' => 'fixed',
       'configuration' => [
+        'trial_interval' => [
+          'number' => '1',
+          'unit' => 'hour',
+        ],
         'interval' => [
           'number' => '1',
           'unit' => 'hour',
