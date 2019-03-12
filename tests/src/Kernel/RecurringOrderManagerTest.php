@@ -9,7 +9,6 @@ use Drupal\commerce_recurring\BillingPeriod;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\Subscription;
 use Drupal\commerce_recurring\Entity\SubscriptionInterface;
-use Drupal\Core\Datetime\DrupalDateTime;
 
 /**
  * @coversDefaultClass \Drupal\commerce_recurring\RecurringOrderManager

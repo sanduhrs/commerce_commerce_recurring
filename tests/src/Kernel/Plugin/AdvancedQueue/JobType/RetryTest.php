@@ -1,14 +1,15 @@
 <?php
 
-namespace Drupal\Tests\commerce_recurring\Kernel;
+namespace Drupal\Tests\commerce_recurring\Kernel\AdvancedQueue\JobType;
 
 use Drupal\advancedqueue\Job;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_recurring\Entity\Subscription;
 use Drupal\commerce_recurring_test\Entity\ExceptionPaymentMethod;
+use Drupal\Tests\commerce_recurring\Kernel\RecurringKernelTestBase;
 
 /**
- * @coversDefaultClass \Drupal\commerce_recurring\Plugin\AdvancedQueue\JobType\RecurringOrderClose
+ * @coversDefaultClass \Drupal\commerce_recurring\Plugin\AdvancedQueue\JobType\RecurringJobTypeBase
  * @group commerce_recurring
  */
 class RetryTest extends RecurringKernelTestBase {
