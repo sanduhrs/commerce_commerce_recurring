@@ -2,16 +2,16 @@
 
 namespace Drupal\commerce_recurring\Form;
 
-use Drupal\commerce\Form\CommercePluginEntityFormBase;
 use Drupal\commerce_recurring\ProraterManager;
 use Drupal\commerce_recurring\BillingScheduleManager;
 use Drupal\commerce_recurring\Entity\BillingSchedule;
 use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\Component\Utility\Html;
+use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
-class BillingScheduleForm extends CommercePluginEntityFormBase {
+class BillingScheduleForm extends EntityForm {
 
   /**
    * The billing schedule plugin manager.
@@ -94,6 +94,7 @@ class BillingScheduleForm extends CommercePluginEntityFormBase {
         'exists' => [BillingSchedule::class, 'load'],
         'source' => ['label'],
       ],
+      '#disabled' => !$billing_schedule->isNew(),
     ];
     $form['displayLabel'] = [
       '#type' => 'textfield',
@@ -210,7 +211,7 @@ class BillingScheduleForm extends CommercePluginEntityFormBase {
       '#default_value' => $billing_schedule->status(),
     ];
 
-    return $this->protectPluginIdElement($form);
+    return $form;
   }
 
   /**
@@ -240,7 +241,7 @@ class BillingScheduleForm extends CommercePluginEntityFormBase {
    */
   public function save(array $form, FormStateInterface $form_state) {
     $this->entity->save();
-    drupal_set_message($this->t('Saved the @label billing schedule.', ['@label' => $this->entity->label()]));
+    $this->messenger()->addMessage($this->t('Saved the @label billing schedule.', ['@label' => $this->entity->label()]));
     $form_state->setRedirect('entity.commerce_billing_schedule.collection');
   }
 
