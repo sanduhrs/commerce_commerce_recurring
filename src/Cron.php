@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_recurring;
 
+use Drupal\advancedqueue\Entity\QueueInterface;
 use Drupal\advancedqueue\Job;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -52,6 +53,21 @@ class Cron implements CronInterface {
    * {@inheritdoc}
    */
   public function run() {
+    $queue_storage = $this->entityTypeManager->getStorage('advancedqueue_queue');
+    /** @var \Drupal\advancedqueue\Entity\QueueInterface $recurring_queue */
+    $recurring_queue = $queue_storage->load('commerce_recurring');
+
+    $this->enqueueOrders($recurring_queue);
+    $this->enqueueSubscriptions($recurring_queue);
+  }
+
+  /**
+   * Enqueues ended recurring orders for closing/renewal.
+   *
+   * @param \Drupal\advancedqueue\Entity\QueueInterface $recurring_queue
+   *   The recurring queue.
+   */
+  protected function enqueueOrders(QueueInterface $recurring_queue) {
     $order_storage = $this->entityTypeManager->getStorage('commerce_order');
     $order_ids = $order_storage->getQuery()
       ->condition('type', 'recurring')
@@ -59,23 +75,12 @@ class Cron implements CronInterface {
       ->condition('billing_period.ends', $this->time->getRequestTime(), '<=')
       ->accessCheck(FALSE)
       ->execute();
-
-    $subscription_storage = $this->entityTypeManager->getStorage('commerce_subscription');
-    $subscription_ids = $subscription_storage->getQuery()
-      ->condition('state', ['pending', 'trial'], 'IN')
-      ->condition('starts', $this->time->getRequestTime(), '<=')
-      ->accessCheck(FALSE)
-      ->execute();
-
-    if (!$order_ids && !$subscription_ids) {
+    if (!$order_ids) {
       return;
     }
-    $queue_storage = $this->entityTypeManager->getStorage('advancedqueue_queue');
-    /** @var \Drupal\advancedqueue\Entity\QueueInterface $recurring_queue */
-    $recurring_queue = $queue_storage->load('commerce_recurring');
+
     /** @var \Drupal\commerce_order\Entity\OrderInterface[] $orders */
     $orders = $order_storage->loadMultiple($order_ids);
-
     foreach ($orders as $order) {
       $subscriptions = $this->recurringOrderManager->collectSubscriptions($order);
       if (!$subscriptions) {
@@ -88,16 +93,8 @@ class Cron implements CronInterface {
 
       $subscription = reset($subscriptions);
       if ($subscription->hasScheduledChanges()) {
-        $previous_state = $subscription->getState()->getId();
         $subscription->applyScheduledChanges();
         $subscription->save();
-        $new_state = $subscription->getState()->getId();
-        // Don't try to activate a trial that was just canceled.
-        if ($previous_state == 'trial' && $previous_state != $new_state) {
-          if (in_array($subscription->id(), $subscription_ids)) {
-            $subscription_ids = array_diff($subscription_ids, [$subscription->id()]);
-          }
-        }
       }
       // If the subscription was scheduled for cancellation, applying the
       // scheduled changes has resulted in both the subscription and its
@@ -116,6 +113,24 @@ class Cron implements CronInterface {
         ]);
         $recurring_queue->enqueueJob($renew_job);
       }
+    }
+  }
+
+  /**
+   * Enqueues pending and trial subscriptions for activation.
+   *
+   * @param \Drupal\advancedqueue\Entity\QueueInterface $recurring_queue
+   *   The recurring queue.
+   */
+  protected function enqueueSubscriptions(QueueInterface $recurring_queue) {
+    $subscription_storage = $this->entityTypeManager->getStorage('commerce_subscription');
+    $subscription_ids = $subscription_storage->getQuery()
+      ->condition('state', ['pending', 'trial'], 'IN')
+      ->condition('starts', $this->time->getRequestTime(), '<=')
+      ->accessCheck(FALSE)
+      ->execute();
+    if (!$subscription_ids) {
+      return;
     }
 
     foreach ($subscription_ids as $subscription_id) {
