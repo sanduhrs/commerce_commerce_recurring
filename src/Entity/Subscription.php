@@ -929,19 +929,8 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
     $subscription_type = $subscription_type_manager->createInstance($bundle);
     $purchasable_entity_type = $subscription_type->getPurchasableEntityTypeId();
     $fields = [];
-    /** @var \Drupal\Core\Field\BaseFieldDefinition $original */
-    $original = $base_field_definitions['purchased_entity'];
-    // The field definition is recreated instead of cloned to get around
-    // core issue #2346329 (fixed in 8.5.x but not 8.4.x).
-    $fields['purchased_entity'] = BaseFieldDefinition::create('entity_reference')
-      ->setLabel(t('Product variation'))
-      ->setDescription($original->getDescription())
-      ->setConstraints($original->getConstraints())
-      ->setDisplayOptions('view', $original->getDisplayOptions('view'))
-      ->setDisplayOptions('form', $original->getDisplayOptions('form'))
-      ->setDisplayConfigurable('view', $original->isDisplayConfigurable('view'))
-      ->setDisplayConfigurable('form', $original->isDisplayConfigurable('form'))
-      ->setRequired($original->isRequired());
+    $fields['purchased_entity'] = clone $base_field_definitions['purchased_entity'];
+    $fields['purchased_entity']->setLabel(t('Product variation'));
 
     if ($purchasable_entity_type) {
       $fields['purchased_entity']->setSetting('target_type', $purchasable_entity_type);
