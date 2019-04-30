@@ -93,8 +93,8 @@ abstract class RecurringKernelTestBase extends CommerceKernelTestBase {
     /** @var \Drupal\commerce_recurring\Entity\BillingScheduleInterface $billing_schedule */
     $billing_schedule = BillingSchedule::create([
       'id' => 'test_id',
-      'label' => 'Hourly schedule',
-      'displayLabel' => 'Hourly schedule',
+      'label' => 'Monthly schedule',
+      'displayLabel' => 'Monthly schedule',
       'billingType' => BillingSchedule::BILLING_TYPE_POSTPAID,
       'plugin' => 'fixed',
       'configuration' => [
@@ -124,6 +124,7 @@ abstract class RecurringKernelTestBase extends CommerceKernelTestBase {
     $payment_method = PaymentMethod::create([
       'type' => 'credit_card',
       'payment_gateway' => $this->paymentGateway,
+      'card_type' => 'visa',
       'uid' => $this->user->id(),
     ]);
     $payment_method->save();
