@@ -347,6 +347,32 @@ interface SubscriptionInterface extends ContentEntityInterface {
   public function setCreatedTime($timestamp);
 
   /**
+   * Gets the next renewal timestamp.
+   *
+   * @return int
+   *   The next renewal timestamp.
+   */
+  public function getNextRenewalTime();
+
+  /**
+   * Sets the next renewal timestamp.
+   *
+   * @param int $timestamp
+   *   The next renewal timestamp.
+   *
+   * @return $this
+   */
+  public function setNextRenewalTime($timestamp);
+
+  /**
+   * Gets the next renewal timestamp as a DrupalDateTime object.
+   *
+   * @return \Drupal\Core\Datetime\DrupalDateTime|null
+   *   The next renewal date/time, or NULL if not known.
+   */
+  public function getNextRenewalDate();
+
+  /**
    * Gets the renewal timestamp.
    *
    * @return int

@@ -100,3 +100,21 @@ function commerce_recurring_update_8103() {
   $update_manager = \Drupal::entityDefinitionUpdateManager();
   $update_manager->installFieldStorageDefinition('scheduled_changes', 'commerce_subscription', 'commerce_recurring', $storage_definition);
 }
+
+/**
+ * Add the 'next_renewal' field to 'commerce_subscription' entities.
+ */
+function commerce_recurring_update_8104() {
+  $storage_definition = BaseFieldDefinition::create('timestamp')
+    ->setLabel(t('Next renewal'))
+    ->setDescription(t('The next renewal time.'))
+    ->setDefaultValue(0)
+    ->setDisplayOptions('view', [
+      'label' => 'hidden',
+      'type' => 'timestamp',
+      'weight' => 0,
+    ]);
+
+  $update_manager = \Drupal::entityDefinitionUpdateManager();
+  $update_manager->installFieldStorageDefinition('next_renewal', 'commerce_subscription', 'commerce_recurring', $storage_definition);
+}

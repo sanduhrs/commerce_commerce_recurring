@@ -395,6 +395,30 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
   /**
    * {@inheritdoc}
    */
+  public function getNextRenewalTime() {
+    return $this->get('next_renewal')->value;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setNextRenewalTime($timestamp) {
+    $this->set('next_renewal', $timestamp);
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getNextRenewalDate() {
+    if ($next_renewal_time = $this->getNextRenewalTime()) {
+      return DrupalDateTime::createFromTimestamp($next_renewal_time);
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getRenewedTime() {
     return $this->get('renewed')->value;
   }
@@ -829,6 +853,16 @@ class Subscription extends ContentEntityBase implements SubscriptionInterface {
     $fields['created'] = BaseFieldDefinition::create('created')
       ->setLabel(t('Created'))
       ->setDescription(t('The time when the subscription was created.'))
+      ->setDisplayOptions('view', [
+        'label' => 'hidden',
+        'type' => 'timestamp',
+        'weight' => 0,
+      ]);
+
+    $fields['next_renewal'] = BaseFieldDefinition::create('timestamp')
+      ->setLabel(t('Next renewal'))
+      ->setDescription(t('The next renewal time.'))
+      ->setDefaultValue(0)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'timestamp',

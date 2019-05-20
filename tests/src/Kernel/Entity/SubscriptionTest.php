@@ -53,6 +53,8 @@ class SubscriptionTest extends RecurringKernelTestBase {
    * @covers ::hasOrder
    * @covers ::getCreatedTime
    * @covers ::setCreatedTime
+   * @covers ::getNextRenewalTime
+   * @covers ::setNextRenewalTime
    * @covers ::getRenewedTime
    * @covers ::setRenewedTime
    * @covers ::getTrialStartTime
@@ -196,6 +198,11 @@ class SubscriptionTest extends RecurringKernelTestBase {
     $this->assertEquals(1550250000, $subscription->getCreatedTime());
     $subscription->setCreatedTime(1508002101);
     $this->assertEquals(1508002101, $subscription->getCreatedTime());
+
+    $this->assertEquals(0, $subscription->getNextRenewalTime());
+    $subscription->setNextRenewalTime(1508002101);
+    $this->assertEquals(1508002101, $subscription->getNextRenewalTime());
+    $this->assertEquals(DrupalDateTime::createFromTimestamp($subscription->getNextRenewalTime()), $subscription->getNextRenewalDate());
 
     $this->assertEquals(0, $subscription->getRenewedTime());
     $subscription->setRenewedTime(123456);

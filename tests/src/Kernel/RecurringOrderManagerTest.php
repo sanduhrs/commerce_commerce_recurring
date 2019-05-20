@@ -114,6 +114,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->assertEquals($expected_billing_period, $billing_period);
     $this->assertTrue($this->trialSubscription->hasOrder($order));
     $this->assertEmpty($this->trialSubscription->getRenewedTime());
+    $this->assertEmpty($this->trialSubscription->getNextRenewalTime());
     $this->assertOrder($order, $this->trialSubscription);
     $this->assertTrue($order->hasItems());
     $order_items = $order->getItems();
@@ -148,6 +149,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->assertEquals($expected_billing_period, $billing_period);
     $this->assertTrue($this->trialSubscription->hasOrder($order));
     $this->assertEmpty($this->trialSubscription->getRenewedTime());
+    $this->assertEmpty($this->trialSubscription->getNextRenewalTime());
     $this->assertOrder($order, $this->trialSubscription);
     $this->assertTrue($order->hasItems());
     $order_items = $order->getItems();
@@ -188,6 +190,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $billing_period = $billing_period_item->toBillingPeriod();
 
     $this->assertEquals($expected_billing_period, $billing_period);
+    $this->assertEquals($billing_period->getEndDate()->getTimestamp(), $this->activeSubscription->getNextRenewalTime());
     // Confirm that the current billing period is 28 days long.
     $this->assertEquals(2419200, $billing_period->getDuration());
     $this->assertTrue($this->activeSubscription->hasOrder($order));
@@ -230,6 +233,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $billing_period = $billing_period_item->toBillingPeriod();
 
     $this->assertEquals($expected_billing_period, $billing_period);
+    $this->assertEquals($billing_period->getEndDate()->getTimestamp(), $this->activeSubscription->getNextRenewalTime());
     // Confirm that the current billing period is 28 days long.
     $this->assertEquals(2419200, $billing_period->getDuration());
     $this->assertTrue($this->activeSubscription->hasOrder($order));
@@ -341,6 +345,7 @@ class RecurringOrderManagerTest extends RecurringKernelTestBase {
     $this->assertTrue($this->activeSubscription->hasOrder($order));
     $this->assertTrue($this->activeSubscription->hasOrder($next_order));
     $this->assertNotEmpty($this->activeSubscription->getRenewedTime());
+    $this->assertEquals($next_billing_period->getEndDate()->getTimestamp(), $this->activeSubscription->getNextRenewalTime());
     $this->assertEquals($billing_period->getEndDate(), $next_billing_period->getStartDate());
     $this->assertOrder($next_order, $this->activeSubscription);
     $this->assertTrue($next_order->hasItems());

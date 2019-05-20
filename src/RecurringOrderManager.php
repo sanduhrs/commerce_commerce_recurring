@@ -82,6 +82,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     $start_date = $subscription->getStartDate();
     $billing_schedule = $subscription->getBillingSchedule();
     $billing_period = $billing_schedule->getPlugin()->generateFirstBillingPeriod($start_date);
+    $subscription->setNextRenewalTime($billing_period->getEndDate()->getTimestamp());
     $order = $this->createOrder($subscription, $billing_period);
     $this->applyCharges($order, $subscription, $billing_period);
     // Allow the type to modify the subscription and order before they're saved.
@@ -186,6 +187,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
     // Update the subscription with the new order and renewal timestamp.
     $subscription->addOrder($next_order);
     $subscription->setRenewedTime($this->time->getCurrentTime());
+    $subscription->setNextRenewalTime($next_billing_period->getEndDate()->getTimestamp());
     $subscription->save();
 
     return $next_order;
