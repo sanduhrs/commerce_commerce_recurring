@@ -13,10 +13,6 @@
   <exclude-pattern>README.md</exclude-pattern>
 
   <rule ref="Drupal">
-    <!-- Commerce is not yet compliant with the new deprecation format. -->
-    <exclude name="Drupal.Commenting.Deprecated"/>
-    <exclude name="Drupal.Semantics.FunctionTriggerError"/>
-
     <!-- The following rules are intentionally disabled. -->
     <exclude name="Drupal.Commenting.ClassComment.Missing"/>
     <exclude name="Drupal.Files.LineLength.TooLong"/>
