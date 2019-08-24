@@ -277,6 +277,7 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
         /** @var \Drupal\commerce_order\Entity\OrderItemInterface $order_item */
         $order_item = $order_item_storage->create([
           'type' => $this->getOrderItemTypeId($subscription),
+          'order_id' => $order->id(),
           'subscription' => $subscription->id(),
         ]);
       }
