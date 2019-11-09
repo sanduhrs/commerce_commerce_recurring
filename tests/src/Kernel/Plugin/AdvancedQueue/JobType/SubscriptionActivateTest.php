@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\commerce_recurring\Kernel\AdvancedQueue\JobType;
+namespace Drupal\Tests\commerce_recurring\Kernel\Plugin\AdvancedQueue\JobType;
 
 use Drupal\advancedqueue\Job;
 use Drupal\commerce_price\Price;

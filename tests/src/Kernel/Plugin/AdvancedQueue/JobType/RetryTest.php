@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\Tests\commerce_recurring\Kernel\AdvancedQueue\JobType;
+namespace Drupal\Tests\commerce_recurring\Kernel\Plugin\AdvancedQueue\JobType;
 
 use Drupal\advancedqueue\Job;
 use Drupal\commerce_price\Price;
@@ -150,6 +150,8 @@ class RetryTest extends RecurringKernelTestBase {
     $payment_method = ExceptionPaymentMethod::create([
       'type' => 'credit_card',
       'payment_gateway' => 'example',
+      'card_type' => 'visa',
+      'card_number' => '1111',
     ]);
     $payment_method->save();
 

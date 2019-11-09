@@ -8,27 +8,21 @@ use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_product\Entity\ProductVariationType;
 use Drupal\commerce_recurring\Entity\BillingSchedule;
 use Drupal\Component\Datetime\TimeInterface;
-use Drupal\Tests\commerce\Kernel\CommerceKernelTestBase;
+use Drupal\Tests\commerce_order\Kernel\OrderKernelTestBase;
 
 /**
  * Provides a base class for Recurring kernel tests.
  */
-abstract class RecurringKernelTestBase extends CommerceKernelTestBase {
+abstract class RecurringKernelTestBase extends OrderKernelTestBase {
 
   /**
    * {@inheritdoc}
    */
   public static $modules = [
     'advancedqueue',
-    'path',
-    'profile',
-    'state_machine',
-    'commerce_order',
     'commerce_payment',
     'commerce_payment_example',
-    'commerce_product',
     'commerce_recurring',
-    'entity_reference_revisions',
   ];
 
   /**
@@ -72,19 +66,12 @@ abstract class RecurringKernelTestBase extends CommerceKernelTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->installEntitySchema('profile');
-    $this->installEntitySchema('commerce_order');
-    $this->installEntitySchema('commerce_order_item');
     $this->installEntitySchema('commerce_payment');
     $this->installEntitySchema('commerce_payment_method');
-    $this->installEntitySchema('commerce_product');
-    $this->installEntitySchema('commerce_product_variation');
     $this->installEntitySchema('commerce_subscription');
     $this->installEntitySchema('user');
     $this->installSchema('advancedqueue', 'advancedqueue');
     $this->installConfig('entity');
-    $this->installConfig('commerce_product');
-    $this->installConfig('commerce_order');
     $this->installConfig('commerce_recurring');
 
     $user = $this->createUser();

@@ -4,7 +4,6 @@ namespace Drupal\Tests\commerce_recurring\Kernel;
 
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderItem;
-use Drupal\commerce_order\Entity\OrderItemType;
 use Drupal\commerce_order\Entity\OrderType;
 use Drupal\commerce_recurring\Entity\Subscription;
 
@@ -20,13 +19,6 @@ class SubscriptionLifecycleTest extends RecurringKernelTestBase {
    */
   protected function setUp() {
     parent::setUp();
-
-    // An order item type that doesn't need a purchasable entity.
-    OrderItemType::create([
-      'id' => 'test',
-      'label' => 'Test',
-      'orderType' => 'default',
-    ])->save();
 
     $order_type = OrderType::load('default');
     $order_type->setWorkflowId('order_default_validation');

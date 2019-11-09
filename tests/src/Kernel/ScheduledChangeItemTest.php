@@ -10,7 +10,7 @@ use Drupal\field\Entity\FieldStorageConfig;
 /**
  * Tests the scheduled change field.
  *
- * @group commerce
+ * @group commerce_recurring
  */
 class ScheduledChangeItemTest extends RecurringKernelTestBase {
 
