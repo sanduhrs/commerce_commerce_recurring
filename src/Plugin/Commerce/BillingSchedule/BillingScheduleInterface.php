@@ -3,7 +3,8 @@
 namespace Drupal\commerce_recurring\Plugin\Commerce\BillingSchedule;
 
 use Drupal\commerce_recurring\BillingPeriod;
-use Drupal\Component\Plugin\ConfigurablePluginInterface;
+use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\Component\Plugin\DependentPluginInterface;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Plugin\PluginFormInterface;
@@ -16,7 +17,7 @@ use Drupal\Core\Plugin\PluginFormInterface;
  *
  * @see \Drupal\commerce_recurring\BillingPeriod
  */
-interface BillingScheduleInterface extends ConfigurablePluginInterface, PluginFormInterface, PluginInspectionInterface {
+interface BillingScheduleInterface extends ConfigurableInterface, DependentPluginInterface, PluginFormInterface, PluginInspectionInterface {
 
   /**
    * Gets the billing schedule label.

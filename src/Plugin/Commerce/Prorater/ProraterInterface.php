@@ -3,7 +3,8 @@
 namespace Drupal\commerce_recurring\Plugin\Commerce\Prorater;
 
 use Drupal\commerce_order\Entity\OrderItemInterface;
-use Drupal\Component\Plugin\ConfigurablePluginInterface;
+use Drupal\Component\Plugin\ConfigurableInterface;
+use Drupal\Component\Plugin\DependentPluginInterface;
 use Drupal\Core\Plugin\PluginFormInterface;
 use Drupal\commerce_recurring\BillingPeriod;
 
@@ -15,7 +16,7 @@ use Drupal\commerce_recurring\BillingPeriod;
  * change or a cancellation happened then), the order item's unit price
  * should only be half of the usual price.
  */
-interface ProraterInterface extends ConfigurablePluginInterface, PluginFormInterface {
+interface ProraterInterface extends ConfigurableInterface, DependentPluginInterface, PluginFormInterface {
 
   /**
    * Prorates the given order item.
