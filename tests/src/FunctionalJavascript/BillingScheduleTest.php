@@ -109,9 +109,9 @@ class BillingScheduleTest extends CommerceWebDriverTestBase {
 
     $this->drupalGet('admin/commerce/config/billing-schedules/manage/' . $billing_schedule->id());
     $this->getSession()->getPage()->selectFieldOption('dunning[num_retries]', '2');
-    $this->waitForAjaxToFinish();
+    $this->assertSession()->assertWaitOnAjaxRequest();
     $this->getSession()->getPage()->selectFieldOption('prorater', 'full_price');
-    $this->waitForAjaxToFinish();
+    $this->assertSession()->assertWaitOnAjaxRequest();
     $this->submitForm([
       'label' => 'Test (Modified)',
       'displayLabel' => 'Awesome test (Modified)',
