@@ -6,7 +6,7 @@
   "license": "GPL-2.0+",
   "require": {
     "drupal/advancedqueue": "^1.0",
-    "drupal/commerce": "^2.15",
+    "drupal/commerce": "2.x-dev",
     "drupal/state_machine": "^1.0"
   },
   "support": {

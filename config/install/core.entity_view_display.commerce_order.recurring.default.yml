@@ -5,7 +5,6 @@ dependencies:
     - commerce_order.commerce_order_type.recurring
     - field.field.commerce_order.recurring.billing_period
     - field.field.commerce_order.recurring.billing_schedule
-    - field.field.commerce_order.recurring.order_items
   module:
     - commerce_order
     - commerce_recurring
