@@ -141,6 +141,9 @@ class RecurringOrderManager implements RecurringOrderManagerInterface {
       throw new HardDeclineException('Payment method not found.');
     }
     $payment_gateway = $payment_method->getPaymentGateway();
+    if (!$payment_gateway) {
+      throw new HardDeclineException('Payment gateway not found');
+    }
     /** @var \Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OnsitePaymentGatewayInterface $payment_gateway_plugin */
     $payment_gateway_plugin = $payment_gateway->getPlugin();
     $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
