@@ -1,7 +1,7 @@
 name: 'Commerce Recurring'
 type: module
 description: 'Provides recurring billing for Drupal Commerce'
-core: 8.x
+core_version_requirement: ^8.8 || ^9
 package: 'Commerce (contrib)'
 dependencies:
   - commerce:commerce

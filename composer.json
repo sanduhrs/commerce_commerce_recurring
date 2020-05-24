@@ -5,6 +5,7 @@
   "homepage": "http://drupal.org/project/commerce_recurring",
   "license": "GPL-2.0+",
   "require": {
+    "drupal/core": "^8.8 || ^9",
     "drupal/advancedqueue": "^1.0",
     "drupal/commerce": "^2.16",
     "drupal/state_machine": "^1.0"
